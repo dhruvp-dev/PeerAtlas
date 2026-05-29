@@ -39,7 +39,7 @@ export default function Footer() {
             </a>
           </div>
           <span className="text-[12px] text-navy-mid/50 select-none">
-            &copy; {new Date().getFullYear()} <a href="https://www.dhruvp.tech" target="_blank" rel="noopener noreferrer" className="hover:underline transition-colors hover:text-navy-deep">Dhruv</a>
+            &copy; {new Date().getFullYear()} <a href="https://www.dhruvp.tech?utm_source=peeratlas&utm_medium=footer" target="_blank" rel="noopener noreferrer" className="hover:underline transition-colors hover:text-navy-deep">Dhruv</a>
           </span>
         </div>
       </div>
