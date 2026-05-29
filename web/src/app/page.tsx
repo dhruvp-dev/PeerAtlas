@@ -21,10 +21,10 @@ export default async function Page() {
       {/* Hero Section */}
       <div className="text-center">
         <h1 className="text-3xl font-bold tracking-tight text-navy-deep sm:text-4.5xl md:text-5xl lg:text-[40px] leading-tight font-sans">
-          The fastest way to find exam papers.
+          Finding a paper shouldn't feel like a treasure hunt.
         </h1>
         <p className="mx-auto mt-3 max-w-lg text-[15px] leading-relaxed text-navy-mid/65 md:text-base">
-          Stop scrolling through messy folders, chats, and drives. Get direct access to the paper you need in 5 seconds.
+          Browse previous year papers by branch, semester, subject, and year, all in one place.
         </p>
       </div>
 
