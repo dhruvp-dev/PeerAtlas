@@ -150,7 +150,7 @@ export default function Page({ params }: PageProps) {
               </button>
 
               <a
-                href={paper.fileUrl}
+                href={`/api/download?url=${encodeURIComponent(paper.fileUrl)}&filename=${encodeURIComponent(paper.subjectSlug + "_" + paper.year + ".pdf")}`}
                 download={`${paper.subjectSlug}_${paper.year}.pdf`}
                 target="_blank"
                 rel="noopener noreferrer"

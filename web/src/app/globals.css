@@ -104,41 +104,41 @@
 }
 
 .dark {
-  --background: #0d1520;
-  --foreground: #dce7f3;
+  --background: #0b0b0c;
+  --foreground: #f3f4f6;
 
-  --card: #121d2e;
-  --card-foreground: #dce7f3;
+  --card: #141416;
+  --card-foreground: #f3f4f6;
 
-  --popover: #121d2e;
-  --popover-foreground: #dce7f3;
+  --popover: #141416;
+  --popover-foreground: #f3f4f6;
 
   --primary: #4a9fd4;
-  --primary-foreground: #0d1520;
+  --primary-foreground: #0b0b0c;
 
-  --secondary: #182537;
-  --secondary-foreground: #dce7f3;
+  --secondary: #1e1e20;
+  --secondary-foreground: #f3f4f6;
 
-  --muted: #182537;
-  --muted-foreground: #7a9ab8;
+  --muted: #1e1e20;
+  --muted-foreground: #9ca3af;
 
-  --accent: #1a3249;
-  --accent-foreground: #dce7f3;
+  --accent: #232326;
+  --accent-foreground: #f3f4f6;
 
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
 
-  --border: #1e3350;
-  --input: #1e3350;
+  --border: #28282b;
+  --input: #28282b;
   --ring: #4a9fd4;
 
   /* PeerAtlas specific tokens for Dark Mode */
-  --white: #0d1520;
-  --navy-deep: #dce7f3;
-  --navy-mid: #7a9ab8;
-  --mist: #182537;
+  --white: #0b0b0c;
+  --navy-deep: #f3f4f6;
+  --navy-mid: #9ca3af;
+  --mist: #1e1e20;
   --sky-blue: #4a9fd4;
-  --sky-tint: #1a3249;
+  --sky-tint: #232326;
 }
 
 @keyframes fade-up {
