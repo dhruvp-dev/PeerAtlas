@@ -196,7 +196,7 @@ function BrowseContent() {
       {/* Header */}
       <div className="text-left">
         <h1 className="text-2xl font-bold tracking-tight text-navy-deep sm:text-3xl font-sans">
-          Browse Archive
+          Browse Papers
         </h1>
         <p className="mt-1.5 text-sm text-navy-mid/60">
           Find and filter previous year question papers instantly.
@@ -205,10 +205,10 @@ function BrowseContent() {
 
       {/* Spotlight Search Bar */}
       <div className="mt-6 relative w-full">
-        <Search className="absolute left-4 h-5 w-5 text-navy-mid/35 pointer-events-none" />
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-navy-mid/70 pointer-events-none" />
         <input
           type="text"
-          placeholder="Type to filter by subject, code, session, semester..."
+          placeholder="Type to filter by subject, semester..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           className="h-13 w-full rounded-search border border-border bg-white pl-12 pr-4 text-sm font-medium text-navy-deep placeholder:text-navy-mid/35 focus:border-sky-blue focus:outline-none focus:ring-[3px] focus:ring-sky-blue/15 transition-hover"
@@ -347,7 +347,7 @@ function BrowseContent() {
             {papers.map((paper) => (
               <a
                 key={paper._id}
-                href={paper.fileUrl}
+                href={`/paper/${paper._id}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group relative flex flex-col justify-between rounded-card border border-border bg-white p-4 transition-hover hover:translate-y-[-2px] hover:shadow-card cursor-pointer"

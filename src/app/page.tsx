@@ -4,12 +4,17 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Search, FileText, ChevronRight } from "lucide-react";
+import { useQuery } from "convex/react";
+import { api } from "../../convex/_generated/api";
 import { MOCK_PAPERS } from "@/lib/mock-data";
 
 export default function Page() {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
+
+  const livePapers = useQuery(api.papers.search, { query: "" });
+  const papers = livePapers ? livePapers.slice(0, 4) : MOCK_PAPERS.slice(0, 4);
 
   // Keyboard shortcut listener (⌘K / Ctrl+K)
   useEffect(() => {
@@ -109,7 +114,7 @@ export default function Page() {
 
         {/* List-style preview rows (GitHub file browser style) */}
         <div className="mt-3 divide-y divide-border border-b border-border">
-          {MOCK_PAPERS.slice(0, 4).map((paper) => (
+          {papers.map((paper) => (
             <div
               key={paper._id}
               onClick={() => router.push(`/paper/${paper._id}`)}

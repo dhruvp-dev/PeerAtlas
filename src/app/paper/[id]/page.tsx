@@ -12,10 +12,13 @@ interface PageProps {
 
 export default function Page({ params }: PageProps) {
   const resolvedParams = use(params);
-  const paperId = resolvedParams.id as any;
+  const rawId = resolvedParams.id as any;
+  const isValidId = typeof rawId === "string" && rawId.length === 32;
+  const paperId = isValidId ? rawId : undefined;
 
   // live queries
-  const paper = useQuery(api.papers.get, { id: paperId });
+  const queriedPaper = useQuery(api.papers.get, isValidId ? { id: paperId as any } : "skip");
+  const paper = isValidId ? queriedPaper : null;
   const logPaperView = useMutation(api.papers.logPaperView);
 
   // States
@@ -24,7 +27,7 @@ export default function Page({ params }: PageProps) {
   // Log view analytic trigger exactly once when component loads and paper is resolved
   useEffect(() => {
     if (paper) {
-      logPaperView({ paperId });
+      logPaperView({ paperId: paperId as string });
     }
   }, [paper, paperId, logPaperView]);
 

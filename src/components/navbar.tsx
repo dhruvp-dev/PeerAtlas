@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Search, Menu, X, BookOpen, LayoutDashboard } from "lucide-react";
@@ -11,7 +12,6 @@ export default function Navbar() {
 
   const navLinks = [
     { name: "Browse", href: "/browse", icon: BookOpen },
-    { name: "Admin", href: "/admin", icon: LayoutDashboard },
   ];
 
   return (
@@ -19,6 +19,7 @@ export default function Navbar() {
       <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-5 md:px-10">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 group">
+          <Image src="/Peer_Logo.svg" alt="PeerAtlas" width={24} height={24} className="h-6 w-auto" />
           <span className="text-lg font-bold tracking-tight text-navy-deep font-sans">
             Peer<span className="text-sky-blue font-medium transition-colors group-hover:text-navy-mid">Atlas</span>
           </span>

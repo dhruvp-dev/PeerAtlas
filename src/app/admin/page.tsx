@@ -110,7 +110,7 @@ export default function Page() {
   // Display Minimalist Login Card
   return (
     <div className="flex-1 flex items-center justify-center px-5 py-16 animate-fade-up">
-      <div className="w-full max-w-sm rounded-card border border-border bg-white p-6 shadow-sm">
+      <div className="w-full max-w-sm rounded-card bg-white p-6">
         <div className="text-center">
           <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-sky-tint text-sky-blue select-none">
             <Lock className="h-5 w-5" />

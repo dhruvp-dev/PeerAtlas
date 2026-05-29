@@ -12,8 +12,16 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "PeerAtlas — Academic Search Archive",
-  description: "Find engineering previous year question papers in under 5 seconds.",
+  title: "PeerAtlas — Bharati Vidyapeeth Deemed University Engineering Papers",
+  description: "Find Bharati Vidyapeeth Deemed University engineering previous year question papers in under 5 seconds.",
+  keywords: [
+    "Bharati Vidyapeeth Deemed University",
+    "BVDU",
+    "Engineering Papers",
+    "Previous Year Question Papers",
+    "B.Tech",
+    "Pune"
+  ],
 };
 
 export default function RootLayout({
