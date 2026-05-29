@@ -104,17 +104,17 @@
 }
 
 .dark {
-  --background: #0f172a;
+  --background: #0b111e;
   --foreground: #f4f6f9;
 
-  --card: #0f172a;
+  --card: #0b111e;
   --card-foreground: #f4f6f9;
 
-  --popover: #0f172a;
+  --popover: #0b111e;
   --popover-foreground: #f4f6f9;
 
   --primary: #4a9fd4;
-  --primary-foreground: #0f172a;
+  --primary-foreground: #0b111e;
 
   --secondary: #1a3a5c;
   --secondary-foreground: #f4f6f9;
@@ -133,7 +133,7 @@
   --ring: #4a9fd4;
 
   /* PeerAtlas specific tokens for Dark Mode */
-  --white: #0f172a;
+  --white: #0b111e;
   --navy-deep: #f4f6f9;
   --navy-mid: #8fa1b8;
   --mist: #16253c;

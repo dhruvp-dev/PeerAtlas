@@ -129,38 +129,57 @@ export const paginatedSearch = query({
   },
   handler: async (ctx, args) => {
     const qTerm = args.query.trim();
-
-    let queryObj = qTerm 
-      ? ctx.db.query("papers").withSearchIndex("search_papers", (q) => q.search("subject", qTerm))
-      : ctx.db.query("papers").order("desc");
-
     const hasFilters = (args.branches && args.branches.length > 0) || 
                        (args.semesters && args.semesters.length > 0) || 
                        (args.sessions && args.sessions.length > 0) || 
                        (args.years && args.years.length > 0);
 
-    if (hasFilters) {
-      queryObj = queryObj.filter((q) => {
-        const conditions = [];
+    if (qTerm) {
+      // Convex SearchQuery does not support .paginate() or chaining complex dynamic .filter()
+      // We fetch top matches and apply filters in memory, returning a fake pagination result
+      const papers = await ctx.db
+        .query("papers")
+        .withSearchIndex("search_papers", (q) => q.search("subject", qTerm))
+        .take(200);
+        
+      const filteredPapers = papers.filter((paper) => {
+        if (args.branches && args.branches.length > 0 && !args.branches.includes(paper.branchSlug)) return false;
+        if (args.semesters && args.semesters.length > 0 && !args.semesters.includes(paper.semester)) return false;
+        if (args.sessions && args.sessions.length > 0 && !args.sessions.includes(paper.session ?? "")) return false;
+        if (args.years && args.years.length > 0 && !args.years.includes(paper.year)) return false;
+        return true;
+      });
 
-        if (args.branches && args.branches.length > 0) {
-          conditions.push(q.or(...args.branches.map((b) => q.eq(q.field("branchSlug"), b))));
-        }
-        if (args.semesters && args.semesters.length > 0) {
-          conditions.push(q.or(...args.semesters.map((s) => q.eq(q.field("semester"), s))));
-        }
-        if (args.sessions && args.sessions.length > 0) {
-          conditions.push(q.or(...args.sessions.map((s) => q.eq(q.field("session"), s === "None" ? null : s))));
-        }
-        if (args.years && args.years.length > 0) {
-          conditions.push(q.or(...args.years.map((y) => q.eq(q.field("year"), y))));
-        }
+      return {
+        page: filteredPapers.slice(0, args.paginationOpts.numItems),
+        isDone: true,
+        continueCursor: "",
+      };
+    } else {
+      // Ordered queries natively support .filter() and .paginate()
+      let queryObj = ctx.db.query("papers").order("desc");
 
-        return q.and(...conditions);
-      }) as any;
+      if (hasFilters) {
+        queryObj = queryObj.filter((q) => {
+          const conditions = [];
+          if (args.branches && args.branches.length > 0) {
+            conditions.push(q.or(...args.branches.map((b) => q.eq(q.field("branchSlug"), b))));
+          }
+          if (args.semesters && args.semesters.length > 0) {
+            conditions.push(q.or(...args.semesters.map((s) => q.eq(q.field("semester"), s))));
+          }
+          if (args.sessions && args.sessions.length > 0) {
+            conditions.push(q.or(...args.sessions.map((s) => q.eq(q.field("session"), s === "None" ? null : s))));
+          }
+          if (args.years && args.years.length > 0) {
+            conditions.push(q.or(...args.years.map((y) => q.eq(q.field("year"), y))));
+          }
+          return q.and(...conditions);
+        }) as any;
+      }
+
+      return await queryObj.paginate(args.paginationOpts);
     }
-
-    return await queryObj.paginate(args.paginationOpts);
   },
 });
 

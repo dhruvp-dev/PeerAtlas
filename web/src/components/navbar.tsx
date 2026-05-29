@@ -63,7 +63,7 @@ export default function Navbar() {
             );
           })}
           <a
-            href="https://github.com/dhruv-pandey/Peeratlas"
+            href="https://github.com/dhruvp-dev/PeerAtlas"
             target="_blank"
             rel="noopener noreferrer"
             className="text-[14px] font-medium text-navy-mid/70 hover:text-navy-deep transition-colors duration-150"
@@ -76,7 +76,7 @@ export default function Navbar() {
         {/* Mobile Actions */}
         <div className="flex items-center gap-3 md:hidden">
           <a
-            href="https://github.com/dhruv-pandey/Peeratlas"
+            href="https://github.com/dhruvp-dev/PeerAtlas"
             target="_blank"
             rel="noopener noreferrer"
             className="flex h-9 w-9 items-center justify-center rounded-btn border border-border bg-white hover:bg-mist transition-colors text-navy-deep"

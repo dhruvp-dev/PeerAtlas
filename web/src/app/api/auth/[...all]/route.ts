@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { toNextJsHandler } from "better-auth/next-js";
-import Database from "better-sqlite3";
+import { createClient } from "@libsql/client";
 
 // Lazy admin seeder routine
 let isSeeded = false;
@@ -8,21 +8,23 @@ let isSeeded = false;
 async function seedAdminIfNeeded() {
   if (isSeeded) return;
   try {
-    const db = new Database("auth.db");
+    const db = createClient({
+      url: process.env.TURSO_DATABASE_URL!,
+      authToken: process.env.TURSO_AUTH_TOKEN,
+    });
     
-    // Check if user table exists (migrated by our runMigrations startup routine)
-    const tableExists = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='user'").get();
-    if (!tableExists) {
-      db.close();
+    // Check if user table exists
+    const tableExists = await db.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='user'");
+    if (tableExists.rows.length === 0) {
       return;
     }
 
-    const row = db.prepare("SELECT count(*) as count FROM user").get() as { count: number };
-    db.close();
+    const result = await db.execute("SELECT count(*) as count FROM user");
+    const count = Number(result.rows[0]?.count ?? result.rows[0]?.[0] ?? 0);
 
-    if (row && row.count === 0) {
-      const email = process.env.ADMIN_EMAIL || "admin@peeratlas.com";
-      const password = process.env.ADMIN_PASSWORD || "admin12345";
+    if (count === 0) {
+      const email = process.env.ADMIN_EMAIL ;
+      const password = process.env.ADMIN_PASSWORD;
       
       console.log(`[Better Auth] No users found. Seeding default administrator: ${email}`);
       

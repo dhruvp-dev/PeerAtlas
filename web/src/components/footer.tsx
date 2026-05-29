@@ -26,11 +26,11 @@ export default function Footer() {
               Browse Papers
             </Link>
             <span className="text-navy-mid/30 select-none">&bull;</span>
-            <a href="https://github.com/dhruv-pandey/Peeratlas" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-navy-deep">
+            <a href="https://github.com/dhruvp-dev/PeerAtlas" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-navy-deep">
               GitHub
             </a>
             <span className="text-navy-mid/30 select-none">&bull;</span>
-            <a href="https://github.com/dhruv-pandey/Peeratlas/issues" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-navy-deep">
+            <a href="https://github.com/dhruvp-dev/PeerAtlas/issues" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-navy-deep">
               Report Issue
             </a>
           </div>
