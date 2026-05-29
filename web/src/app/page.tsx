@@ -113,7 +113,7 @@ export default function Page() {
               </div>
 
               {/* PDF Badge */}
-              <div className="shrink-0 flex items-center justify-center rounded bg-[#fef3e7] px-2.5 py-1 text-[11px] font-bold text-[#b45309]">
+              <div className="shrink-0 flex items-center justify-center rounded bg-[#fef3e7] px-2.5 py-1 text-[11px] font-bold text-[#b45309] dark:bg-[#2a1a04] dark:text-[#d97706]">
                 PDF
               </div>
             </div>

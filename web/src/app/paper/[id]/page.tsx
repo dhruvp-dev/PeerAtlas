@@ -252,7 +252,7 @@ export default function Page({ params }: PageProps) {
                     href={`/paper/${related._id}`}
                     className="group flex flex-col gap-1 rounded-lg border border-border/60 bg-white p-2.5 hover:border-sky-blue transition-hover cursor-pointer"
                   >
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#b45309]">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#b45309] dark:text-[#d97706]">
                       {related.session} {related.year}
                     </span>
                     <h4 className="text-xs font-semibold text-navy-deep group-hover:text-sky-blue transition-colors line-clamp-2">

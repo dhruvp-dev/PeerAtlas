@@ -379,7 +379,7 @@ function BrowseContent() {
                     <span className="text-xs font-bold uppercase tracking-wider text-navy-mid/45">
                       Sem {paper.semester} · {paper.branchSlug.toUpperCase()}
                     </span>
-                    <span className="rounded bg-[#fef3e7] px-2 py-0.5 text-[10px] font-bold text-[#b45309] shrink-0 font-mono">
+                    <span className="rounded bg-[#fef3e7] px-2 py-0.5 text-[10px] font-bold text-[#b45309] dark:bg-[#2a1a04] dark:text-[#d97706] shrink-0 font-mono">
                       PDF
                     </span>
                   </div>
