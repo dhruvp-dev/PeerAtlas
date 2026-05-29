@@ -23,8 +23,13 @@ async function seedAdminIfNeeded() {
     const count = Number(result.rows[0]?.count ?? result.rows[0]?.[0] ?? 0);
 
     if (count === 0) {
-      const email = process.env.ADMIN_EMAIL ;
+      const email = process.env.ADMIN_EMAIL;
       const password = process.env.ADMIN_PASSWORD;
+
+      if (!email || !password) {
+        console.warn("[Better Auth] Cannot seed admin: ADMIN_EMAIL or ADMIN_PASSWORD environment variables are not set.");
+        return;
+      }
       
       console.log(`[Better Auth] No users found. Seeding default administrator: ${email}`);
       
