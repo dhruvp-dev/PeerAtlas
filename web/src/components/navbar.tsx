@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { Search, Menu, X, BookOpen, LayoutDashboard } from "lucide-react";
+import { Search, Menu, X, BookOpen, LayoutDashboard, Info } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
 
 const GithubIcon = ({ className }: { className?: string }) => (
@@ -24,6 +24,7 @@ export default function Navbar() {
 
   const navLinks = [
     { name: "Browse", href: "/browse", icon: BookOpen },
+    { name: "About", href: "/about", icon: Info },
   ];
 
   return (

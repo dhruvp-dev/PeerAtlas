@@ -22,6 +22,10 @@ export default function Footer() {
         {/* Right Side */}
         <div className="flex flex-col items-center md:items-end gap-1.5 mt-4 md:mt-0 text-[13px] font-medium text-navy-mid/60">
           <div className="flex items-center gap-3">
+            <Link href="/about" className="transition-colors hover:text-navy-deep">
+              About
+            </Link>
+            <span className="text-navy-mid/30 select-none">&bull;</span>
             <Link href="/browse" className="transition-colors hover:text-navy-deep">
               Browse Papers
             </Link>
