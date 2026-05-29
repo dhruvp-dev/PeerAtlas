@@ -1,0 +1,203 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), monospace;
+  --font-heading: var(--font-sans), system-ui, sans-serif;
+
+  /* PeerAtlas Calm Academic Design Tokens mapped to CSS vars for Dark Mode */
+  --color-white: var(--white);
+  --color-navy-deep: var(--navy-deep);
+  --color-navy-mid: var(--navy-mid);
+  --color-sky-blue: var(--sky-blue);
+  --color-sky-tint: var(--sky-tint);
+  --color-mist: var(--mist);
+  --color-border-custom: var(--border);
+
+  /* Rounded Corner Tokens */
+  --radius-card: 16px;
+  --radius-btn: 10px;
+  --radius-search: 14px;
+  --radius-dropdown: 12px;
+  --radius-row: 10px;
+
+  /* shadcn Custom Variables mapping to custom tokens */
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* Micro-animations */
+  --animate-fade-up: fade-up 400ms cubic-bezier(0.23, 1, 0.32, 1);
+  --animate-fade-up-slow: fade-up 500ms cubic-bezier(0.23, 1, 0.32, 1);
+  --animate-slide-down: slide-down 200ms ease-out forwards;
+}
+
+:root {
+  /* Page backgrounds are white and mist */
+  --background: #ffffff;
+  --foreground: #0e1f3b; /* Deep Navy dominates headings & primary text */
+
+  --card: #ffffff;
+  --card-foreground: #0e1f3b;
+
+  --popover: #ffffff;
+  --popover-foreground: #0e1f3b;
+
+  /* Navy Deep dominates primary actions */
+  --primary: #0e1f3b;
+  --primary-foreground: #ffffff;
+
+  /* Mist is secondary background, Navy Mid is muted secondary text */
+  --secondary: #f4f6f9;
+  --secondary-foreground: #1a3a5c;
+
+  --muted: #f4f6f9;
+  --muted-foreground: #1a3a5c;
+
+  /* Sky Tint is selected/hover state background */
+  --accent: #e8f4fb;
+  --accent-foreground: #0e1f3b;
+
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+
+  --border: #dbe4ec; /* Thin separator/border token */
+  --input: #dbe4ec;
+  --ring: #4a9fd4; /* Focus Accent - Sky Blue */
+
+  /* PeerAtlas specific tokens mapped to CSS vars */
+  --white: #ffffff;
+  --navy-deep: #0e1f3b;
+  --navy-mid: #1a3a5c;
+  --mist: #f4f6f9;
+  --sky-blue: #4a9fd4;
+  --sky-tint: #e8f4fb;
+
+  --radius: 0.625rem; /* ~10px */
+}
+
+.dark {
+  --background: #0f172a;
+  --foreground: #f4f6f9;
+
+  --card: #0f172a;
+  --card-foreground: #f4f6f9;
+
+  --popover: #0f172a;
+  --popover-foreground: #f4f6f9;
+
+  --primary: #4a9fd4;
+  --primary-foreground: #0f172a;
+
+  --secondary: #1a3a5c;
+  --secondary-foreground: #f4f6f9;
+
+  --muted: #16253c;
+  --muted-foreground: #8fa1b8;
+
+  --accent: #1d3350;
+  --accent-foreground: #f4f6f9;
+
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+
+  --border: #243852;
+  --input: #243852;
+  --ring: #4a9fd4;
+
+  /* PeerAtlas specific tokens for Dark Mode */
+  --white: #0f172a;
+  --navy-deep: #f4f6f9;
+  --navy-mid: #8fa1b8;
+  --mist: #16253c;
+  --sky-blue: #4a9fd4;
+  --sky-tint: #1d3350;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-down {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@layer base {
+  * {
+    @apply border-border/80 outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground selection:bg-sky-tint selection:text-navy-deep min-h-screen flex flex-col;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  html {
+    @apply font-sans h-full scroll-smooth;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading font-semibold text-navy-deep tracking-tight;
+  }
+}
+
+/* Custom helper classes for micro-interactions */
+.transition-hover {
+  transition: all 200ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.anim-1 { animation-delay: 50ms; }
+.anim-2 { animation-delay: 120ms; }
+.anim-3 { animation-delay: 200ms; }
+.anim-4 { animation-delay: 280ms; }
+.anim-5 { animation-delay: 360ms; }
+
+/* Hide scrollbar utility for active chips container */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Explicit Logo Swapping for Theme Toggle */
+.logo-light { display: block; }
+.logo-dark { display: none; }
+
+html.dark .logo-light { display: none !important; }
+html.dark .logo-dark { display: block !important; }
