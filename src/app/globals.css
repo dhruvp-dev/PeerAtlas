@@ -1,26 +1,141 @@
 @import "tailwindcss";
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-sans), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), monospace;
+  --font-heading: var(--font-sans), system-ui, sans-serif;
+
+  /* PeerAtlas Calm Academic Design Tokens */
+  --color-navy-deep: #0e1f3b;
+  --color-navy-mid: #1a3a5c;
+  --color-sky-blue: #4a9fd4;
+  --color-sky-tint: #e8f4fb;
+  --color-mist: #f4f6f9;
+  --color-border-custom: #dbe4ec;
+
+  /* Rounded Corner Tokens */
+  --radius-card: 16px;
+  --radius-btn: 10px;
+  --radius-search: 14px;
+  --radius-dropdown: 12px;
+  --radius-row: 10px;
+
+  /* shadcn Custom Variables mapping to custom tokens */
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* Micro-animations */
+  --animate-fade-up: fade-up 400ms cubic-bezier(0.23, 1, 0.32, 1);
+  --animate-fade-up-slow: fade-up 500ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+:root {
+  /* Page backgrounds are white and mist */
+  --background: #ffffff;
+  --foreground: #0e1f3b; /* Deep Navy dominates headings & primary text */
+
+  --card: #ffffff;
+  --card-foreground: #0e1f3b;
+
+  --popover: #ffffff;
+  --popover-foreground: #0e1f3b;
+
+  /* Navy Deep dominates primary actions */
+  --primary: #0e1f3b;
+  --primary-foreground: #ffffff;
+
+  /* Mist is secondary background, Navy Mid is muted secondary text */
+  --secondary: #f4f6f9;
+  --secondary-foreground: #1a3a5c;
+
+  --muted: #f4f6f9;
+  --muted-foreground: #1a3a5c;
+
+  /* Sky Tint is selected/hover state background */
+  --accent: #e8f4fb;
+  --accent-foreground: #0e1f3b;
+
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+
+  --border: #dbe4ec; /* Thin separator/border token */
+  --input: #dbe4ec;
+  --ring: #4a9fd4; /* Focus Accent - Sky Blue */
+
+  --radius: 0.625rem; /* ~10px */
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  * {
+    @apply border-border/80 outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground selection:bg-sky-tint selection:text-navy-deep min-h-screen flex flex-col;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  html {
+    @apply font-sans h-full scroll-smooth;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading font-semibold text-navy-deep tracking-tight;
+  }
+}
+
+/* Custom helper classes for micro-interactions */
+.transition-hover {
+  transition: all 200ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.anim-1 { animation-delay: 50ms; }
+.anim-2 { animation-delay: 120ms; }
+.anim-3 { animation-delay: 200ms; }
+.anim-4 { animation-delay: 280ms; }
+.anim-5 { animation-delay: 360ms; }
+
+/* Hide scrollbar utility for active chips container */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
