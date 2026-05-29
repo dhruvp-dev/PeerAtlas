@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { Search } from "lucide-react";
+import { useClickOutside } from "@/lib/hooks";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 
@@ -26,9 +27,9 @@ export function SearchAutocomplete({
   showShortcut = false,
   inputRef,
 }: SearchAutocompleteProps) {
-  const [isOpen, setIsOpen] = useState(false);
   const [debouncedValue, setDebouncedValue] = useState(value);
   const [activeIndex, setActiveIndex] = useState(-1);
+  const [isFocused, setIsFocused] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   
   // Use internal ref if none provided
@@ -47,39 +48,13 @@ export function SearchAutocomplete({
   // Fetch suggestions
   const suggestions = useQuery(api.papers.autocomplete, { query: debouncedValue }) || [];
 
-  // Handle open state based on focus and suggestions
-  useEffect(() => {
-    if (value.trim() && suggestions.length > 0) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setIsOpen(true);
-    } else {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setIsOpen(false);
-    }
-  }, [value, suggestions]);
+  const isOpen = isFocused && value.trim().length > 0 && suggestions.length > 0;
 
-  // Reset active index when value changes
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setActiveIndex(-1);
-  }, [value]);
-
-  // Click outside to close
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node) &&
-        actualInputRef.current &&
-        !actualInputRef.current.contains(event.target as Node)
-      ) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [actualInputRef]);
+  useClickOutside(
+    dropdownRef,
+    () => setIsFocused(false),
+    actualInputRef as React.RefObject<HTMLElement>
+  );
 
   // Keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -98,18 +73,18 @@ export function SearchAutocomplete({
       } else {
         // If no suggestion selected, submit the raw value
         onSelect(value);
-        setIsOpen(false);
+        setIsFocused(false);
       }
     } else if (e.key === "Escape") {
       e.preventDefault();
-      setIsOpen(false);
+      setIsFocused(false);
     }
   };
 
   const handleSelect = (subject: string) => {
     onChange(subject);
     onSelect(subject);
-    setIsOpen(false);
+    setIsFocused(false);
     setActiveIndex(-1);
   };
 
@@ -117,7 +92,8 @@ export function SearchAutocomplete({
   const highlightMatch = (text: string, query: string) => {
     if (!query.trim()) return text;
     
-    const parts = text.split(new RegExp(`(${query})`, "gi"));
+    const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const parts = text.split(new RegExp(`(${escaped})`, "gi"));
     return (
       <>
         {parts.map((part, i) =>
@@ -145,10 +121,11 @@ export function SearchAutocomplete({
           type="text"
           placeholder={placeholder}
           value={value}
-          onChange={(e) => onChange(e.target.value)}
-          onFocus={() => {
-            if (value.trim() && suggestions.length > 0) setIsOpen(true);
+          onChange={(e) => {
+            onChange(e.target.value);
+            setActiveIndex(-1);
           }}
+          onFocus={() => setIsFocused(true)}
           onKeyDown={handleKeyDown}
           className={`h-14 w-full rounded-search border border-border bg-white pl-12 pr-[64px] text-[15px] font-medium text-navy-deep placeholder:text-navy-mid/35 transition-hover focus:border-sky-blue focus:outline-none focus:ring-[3px] focus:ring-sky-blue/15 ${inputClassName}`}
         />

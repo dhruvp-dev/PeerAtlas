@@ -28,12 +28,6 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-white/85 backdrop-blur-md transition-all duration-200">
-      <style dangerouslySetInnerHTML={{ __html: `
-        .logo-light { display: block; }
-        .logo-dark { display: none; }
-        html.dark .logo-light { display: none !important; }
-        html.dark .logo-dark { display: block !important; }
-      ` }} />
       <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-5 md:px-10">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 group">

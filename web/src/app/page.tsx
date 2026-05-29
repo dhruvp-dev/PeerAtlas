@@ -1,44 +1,20 @@
-"use client";
-
-import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Search, FileText, ChevronRight } from "lucide-react";
-import { useQuery } from "convex/react";
+import { FileText, ChevronRight } from "lucide-react";
+import { fetchQuery } from "convex/nextjs";
 import { api } from "../../convex/_generated/api";
 import { MOCK_PAPERS } from "@/lib/mock-data";
-import { SearchAutocomplete } from "@/components/search-autocomplete";
+import { HeroClient } from "@/components/hero-client";
 
-export default function Page() {
-  const router = useRouter();
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [query, setQuery] = useState("");
+export default async function Page() {
+  let livePapers;
+  try {
+    livePapers = await fetchQuery(api.papers.search, { query: "" });
+  } catch (e) {
+    console.error("Failed to fetch papers from Convex", e);
+    livePapers = null;
+  }
 
-  const livePapers = useQuery(api.papers.search, { query: "" });
   const papers = livePapers ? livePapers.slice(0, 4) : MOCK_PAPERS.slice(0, 4);
-
-  // Keyboard shortcut listener (/)
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "/" && document.activeElement !== inputRef.current) {
-        e.preventDefault();
-        inputRef.current?.focus();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (query.trim()) {
-      router.push(`/browse?q=${encodeURIComponent(query.trim())}`);
-    } else {
-      router.push("/browse");
-    }
-  };
-
-
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center px-5 py-8 md:py-12 animate-fade-up">
@@ -53,23 +29,7 @@ export default function Page() {
       </div>
 
       {/* Spotlight Search Bar */}
-      <form onSubmit={handleSearchSubmit} className="mt-6 md:mt-8 relative w-full">
-        <SearchAutocomplete
-          value={query}
-          onChange={setQuery}
-          onSelect={(val) => {
-            if (val.trim()) {
-              router.push(`/browse?q=${encodeURIComponent(val.trim())}`);
-            } else {
-              router.push("/browse");
-            }
-          }}
-          showShortcut={true}
-          inputRef={inputRef}
-        />
-      </form>
-
-
+      <HeroClient />
 
       {/* Popular Papers preview list */}
       <div className="mt-10 md:mt-12">
@@ -88,10 +48,10 @@ export default function Page() {
 
         {/* List-style preview rows (GitHub file browser style) */}
         <div className="mt-3 divide-y divide-border border-b border-border">
-          {papers.map((paper) => (
-            <div
+          {papers.map((paper: any) => (
+            <Link
               key={paper._id}
-              onClick={() => router.push(`/paper/${paper._id}`)}
+              href={`/paper/${paper._id}`}
               className="grid grid-cols-[1fr_auto] items-center gap-4 rounded-row px-3.5 py-3 transition-hover hover:bg-mist cursor-pointer"
             >
               {/* Content */}
@@ -113,10 +73,10 @@ export default function Page() {
               </div>
 
               {/* PDF Badge */}
-              <div className="shrink-0 flex items-center justify-center rounded bg-[#fef3e7] px-2.5 py-1 text-[11px] font-bold text-[#b45309] dark:bg-[#2a1a04] dark:text-[#d97706]">
+              <div className="shrink-0 flex items-center justify-center rounded bg-[#fef3e7] px-2.5 py-1 text-[11px] font-bold text-[#b45309]">
                 PDF
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </div>

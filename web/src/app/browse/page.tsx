@@ -6,8 +6,26 @@ import { Search, ChevronDown, X, Filter } from "lucide-react";
 import { useQuery, useMutation, usePaginatedQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { SearchAutocomplete } from "@/components/search-autocomplete";
+import { slugify } from "@/lib/utils";
 
 type FilterKey = "branch" | "semester" | "session" | "year";
+
+// Hoisted static options matching our database records and output directories
+const FILTER_OPTIONS = {
+  branch: [
+    "Artificial Intelligence and Machine Learning",
+    "Computer Science and Business Systems",
+    "Computer Science and Engineering",
+    "Information Technology",
+    "Electronics and Telecommunication Engineering",
+    "Civil Engineering",
+    "Mechanical Engineering",
+    "Chemical Engineering",
+  ],
+  semester: ["1", "2", "3", "4", "5", "6", "7", "8"],
+  session: ["Winter", "Summer"],
+  year: ["2025", "2024", "2023", "2022", "2021", "2020", "2019", "2018"],
+} as const;
 
 // Skeleton Loader for SearchParams Prerendering
 function BrowseSkeleton() {
@@ -81,43 +99,15 @@ function BrowseContent() {
   // State for tracking which dropdown is currently open (null if none)
   const [activeDropdown, setActiveDropdown] = useState<FilterKey | null>(null);
 
+  // Derive active filters state
+  const hasActiveFilters = Boolean(query) || Object.values(selectedFilters).some((f) => f.length > 0);
+
   // Sync initial query from URL search parameters
   useEffect(() => {
     const q = searchParams.get("q") || "";
     setQuery(q);
     setInputValue(q);
   }, [searchParams]);
-
-  // Set document title
-  useEffect(() => {
-    document.title = "Browse Papers | PeerAtlas";
-  }, []);
-
-  // Static defined options matching our database records and output directories
-  const filterOptions = useMemo(() => {
-    return {
-      branch: [
-        "Artificial Intelligence and Machine Learning",
-        "Computer Science and Business Systems",
-        "Computer Science and Engineering",
-        "Information Technology",
-        "Electronics and Telecommunication Engineering",
-        "Civil Engineering",
-        "Mechanical Engineering",
-        "Chemical Engineering",
-      ],
-      semester: ["1", "2", "3", "4", "5", "6", "7", "8"],
-      session: ["Winter", "Summer"],
-      year: ["2025", "2024", "2023", "2022", "2021", "2020", "2019", "2018"],
-    };
-  }, []);
-
-  // Map display names to their slugs used in the DB
-  const slugify = (text: string) =>
-    text
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)+/g, "");
 
   // Live Query from Convex Database
   const branchSlugs = useMemo(() => selectedFilters.branch.map(slugify), [selectedFilters.branch]);
@@ -254,19 +244,19 @@ function BrowseContent() {
                     }`}
                   >
                     <span>{filterLabels[key]}</span>
-                    {isSelected && (
+                    {isSelected ? (
                       <span className="flex h-4.5 w-4.5 items-center justify-center rounded-full bg-navy-deep text-[10px] font-bold text-white">
                         {selectedFilters[key].length}
                       </span>
-                    )}
+                    ) : null}
                     <ChevronDown className={`h-3.5 w-3.5 text-navy-mid/40 transition-transform ${isOpen ? "rotate-180" : ""}`} />
                   </button>
 
                   {/* Absolute Dropdown Panel */}
-                  {isOpen && (
+                  {isOpen ? (
                     <div className="absolute left-0 mt-2 w-72 rounded-dropdown border border-border bg-white p-2 shadow-dropdown z-50 animate-fade-up">
                       <div className="flex flex-col gap-1 max-h-60 overflow-y-auto no-scrollbar">
-                        {filterOptions[key].map((option) => {
+                        {FILTER_OPTIONS[key].map((option) => {
                           const isChecked = selectedFilters[key].includes(option);
                           return (
                             <button
@@ -292,26 +282,26 @@ function BrowseContent() {
                         })}
                       </div>
                     </div>
-                  )}
+                  ) : null}
                 </div>
               );
             })}
 
             {/* Clear All action */}
-            {(query || Object.values(selectedFilters).some((f) => f.length > 0)) && (
+            {hasActiveFilters ? (
               <button
                 onClick={clearAllFilters}
                 className="text-xs font-semibold text-sky-blue hover:text-navy-deep select-none px-2 py-1"
               >
                 Clear all
               </button>
-            )}
+            ) : null}
           </div>
         </div>
       </div>
 
       {/* Active Filter Chips */}
-      {Object.entries(selectedFilters).some(([_, vals]) => vals.length > 0) && (
+      {Object.entries(selectedFilters).some(([_, vals]) => vals.length > 0) ? (
         <div className="mt-4 flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
           <span className="text-xs font-bold uppercase tracking-wider text-navy-mid/40 shrink-0">
             Active filters:
@@ -338,7 +328,7 @@ function BrowseContent() {
             )}
           </div>
         </div>
-      )}
+      ) : null}
 
       {/* Result Count and Paper Grid */}
       <div className="mt-8">
@@ -410,7 +400,7 @@ function BrowseContent() {
               </a>
             ))}
           </div>
-          {status === "CanLoadMore" && (
+          {status === "CanLoadMore" ? (
             <div className="mt-8 flex justify-center">
               <button
                 onClick={() => loadMore(15)}
@@ -419,12 +409,12 @@ function BrowseContent() {
                 Load More Papers
               </button>
             </div>
-          )}
-          {status === "LoadingMore" && (
+          ) : null}
+          {status === "LoadingMore" ? (
             <div className="mt-8 flex justify-center">
               <div className="h-10 w-40 animate-pulse rounded bg-mist" />
             </div>
-          )}
+          ) : null}
         </>
         ) : (
           /* Empty State */
