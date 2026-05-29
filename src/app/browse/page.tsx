@@ -3,8 +3,9 @@
 import { useEffect, useRef, useState, useMemo, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Search, ChevronDown, X, Filter } from "lucide-react";
-import { useQuery, useMutation } from "convex/react";
+import { useQuery, useMutation, usePaginatedQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
+import { SearchAutocomplete } from "@/components/search-autocomplete";
 
 type FilterKey = "branch" | "semester" | "session" | "year";
 
@@ -69,6 +70,7 @@ function BrowseContent() {
 
   // State for search query and active filters
   const [query, setQuery] = useState(initialQuery);
+  const [inputValue, setInputValue] = useState(initialQuery);
   const [selectedFilters, setSelectedFilters] = useState<Record<FilterKey, string[]>>({
     branch: [],
     semester: [],
@@ -81,8 +83,15 @@ function BrowseContent() {
 
   // Sync initial query from URL search parameters
   useEffect(() => {
-    setQuery(searchParams.get("q") || "");
+    const q = searchParams.get("q") || "";
+    setQuery(q);
+    setInputValue(q);
   }, [searchParams]);
+
+  // Set document title
+  useEffect(() => {
+    document.title = "Browse Papers | PeerAtlas";
+  }, []);
 
   // Static defined options matching our database records and output directories
   const filterOptions = useMemo(() => {
@@ -116,16 +125,20 @@ function BrowseContent() {
   const sessions = selectedFilters.session;
   const years = useMemo(() => selectedFilters.year.map(Number), [selectedFilters.year]);
 
-  const livePapers = useQuery(api.papers.search, {
-    query: query,
-    branches: branchSlugs.length > 0 ? branchSlugs : undefined,
-    semesters: semesters.length > 0 ? semesters : undefined,
-    sessions: sessions.length > 0 ? sessions : undefined,
-    years: years.length > 0 ? years : undefined,
-  });
+  const { results, status, loadMore } = usePaginatedQuery(
+    api.papers.paginatedSearch,
+    {
+      query: query,
+      branches: branchSlugs.length > 0 ? branchSlugs : undefined,
+      semesters: semesters.length > 0 ? semesters : undefined,
+      sessions: sessions.length > 0 ? sessions : undefined,
+      years: years.length > 0 ? years : undefined,
+    },
+    { initialNumItems: 15 }
+  );
 
-  const papers = livePapers ?? [];
-  const isLoading = livePapers === undefined;
+  const papers = results ?? [];
+  const isLoading = status === "LoadingFirstPage";
 
   const logSearch = useMutation(api.papers.logSearch);
 
@@ -169,6 +182,7 @@ function BrowseContent() {
       year: [],
     });
     setQuery("");
+    setInputValue("");
     router.replace("/browse");
   };
 
@@ -205,13 +219,19 @@ function BrowseContent() {
 
       {/* Spotlight Search Bar */}
       <div className="mt-6 relative w-full">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-navy-mid/70 pointer-events-none" />
-        <input
-          type="text"
+        <SearchAutocomplete
+          value={inputValue}
+          onChange={setInputValue}
+          onSelect={(val) => {
+            setQuery(val);
+            if (val.trim()) {
+              router.replace(`/browse?q=${encodeURIComponent(val.trim())}`);
+            } else {
+              router.replace("/browse");
+            }
+          }}
           placeholder="Type to filter by subject, semester..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          className="h-13 w-full rounded-search border border-border bg-white pl-12 pr-4 text-sm font-medium text-navy-deep placeholder:text-navy-mid/35 focus:border-sky-blue focus:outline-none focus:ring-[3px] focus:ring-sky-blue/15 transition-hover"
+          inputClassName="!h-13 !pl-12 !pr-4 !text-sm"
         />
       </div>
 
@@ -343,6 +363,7 @@ function BrowseContent() {
             ))}
           </div>
         ) : papers.length > 0 ? (
+          <>
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {papers.map((paper) => (
               <a
@@ -389,6 +410,22 @@ function BrowseContent() {
               </a>
             ))}
           </div>
+          {status === "CanLoadMore" && (
+            <div className="mt-8 flex justify-center">
+              <button
+                onClick={() => loadMore(15)}
+                className="rounded-btn border border-border bg-white px-5 py-2.5 text-sm font-semibold text-navy-deep shadow-sm transition-hover hover:border-sky-blue hover:text-sky-blue"
+              >
+                Load More Papers
+              </button>
+            </div>
+          )}
+          {status === "LoadingMore" && (
+            <div className="mt-8 flex justify-center">
+              <div className="h-10 w-40 animate-pulse rounded bg-mist" />
+            </div>
+          )}
+        </>
         ) : (
           /* Empty State */
           <div className="mt-8 rounded-card border border-border bg-white py-16 text-center">

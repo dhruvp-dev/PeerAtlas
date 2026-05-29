@@ -41,3 +41,10 @@ yarn-error.log*
 next-env.d.ts
 AGENTS.md   
 CLAUDE.md
+
+# better-auth database
+auth.db
+auth.db-journal
+
+# agent histories
+.agents/

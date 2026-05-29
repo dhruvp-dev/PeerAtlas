@@ -13,19 +13,28 @@ export default function Footer() {
               Peer<span className="text-sky-blue font-medium">Atlas</span>
             </span>
           </div>
-          <p className="mt-1 text-[13px] text-navy-mid/60">
-            Search-first academic archive for engineering question papers.
+          <p className="mt-1 text-[13px] font-medium text-navy-mid/70">
+            Built by students, for students.
           </p>
         </div>
 
         {/* Right Side */}
-        <div className="flex items-center gap-6 text-[13px] font-medium text-navy-mid/60">
-          <Link href="/browse" className="transition-colors hover:text-navy-deep">
-            Browse Papers
-          </Link>
-          <span className="text-navy-mid/30">|</span>
-          <span className="text-navy-mid/50 select-none">
-            Find in 5s
+        <div className="flex flex-col items-center md:items-end gap-1.5 mt-4 md:mt-0 text-[13px] font-medium text-navy-mid/60">
+          <div className="flex items-center gap-3">
+            <Link href="/browse" className="transition-colors hover:text-navy-deep">
+              Browse Papers
+            </Link>
+            <span className="text-navy-mid/30 select-none">&bull;</span>
+            <a href="https://github.com/dhruv-pandey/Peeratlas" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-navy-deep">
+              GitHub
+            </a>
+            <span className="text-navy-mid/30 select-none">&bull;</span>
+            <a href="https://github.com/dhruv-pandey/Peeratlas/issues" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-navy-deep">
+              Report Issue
+            </a>
+          </div>
+          <span className="text-[12px] text-navy-mid/50 select-none">
+            &copy; {new Date().getFullYear()} <a href="https://www.dhruvp.tech" target="_blank" rel="noopener noreferrer" className="hover:underline transition-colors hover:text-navy-deep">Dhruv Pandey</a>
           </span>
         </div>
       </div>

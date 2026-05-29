@@ -91,10 +91,10 @@ export const search = query({
       papers = await ctx.db
         .query("papers")
         .withSearchIndex("search_papers", (q) => q.search("subject", qTerm))
-        .take(500);
+        .take(3000);
     } else {
       // 2. Fetch the latest papers
-      papers = await ctx.db.query("papers").order("desc").take(500);
+      papers = await ctx.db.query("papers").order("desc").take(3000);
     }
 
     // Apply multi-select filter arguments
@@ -113,6 +113,90 @@ export const search = query({
       }
       return true;
     });
+  },
+});
+
+import { paginationOptsValidator } from "convex/server";
+
+export const paginatedSearch = query({
+  args: {
+    paginationOpts: paginationOptsValidator,
+    query: v.string(),
+    branches: v.optional(v.array(v.string())),
+    semesters: v.optional(v.array(v.number())),
+    sessions: v.optional(v.array(v.string())),
+    years: v.optional(v.array(v.number())),
+  },
+  handler: async (ctx, args) => {
+    const qTerm = args.query.trim();
+
+    let queryObj = qTerm 
+      ? ctx.db.query("papers").withSearchIndex("search_papers", (q) => q.search("subject", qTerm))
+      : ctx.db.query("papers").order("desc");
+
+    const hasFilters = (args.branches && args.branches.length > 0) || 
+                       (args.semesters && args.semesters.length > 0) || 
+                       (args.sessions && args.sessions.length > 0) || 
+                       (args.years && args.years.length > 0);
+
+    if (hasFilters) {
+      queryObj = queryObj.filter((q) => {
+        const conditions = [];
+
+        if (args.branches && args.branches.length > 0) {
+          conditions.push(q.or(...args.branches.map((b) => q.eq(q.field("branchSlug"), b))));
+        }
+        if (args.semesters && args.semesters.length > 0) {
+          conditions.push(q.or(...args.semesters.map((s) => q.eq(q.field("semester"), s))));
+        }
+        if (args.sessions && args.sessions.length > 0) {
+          conditions.push(q.or(...args.sessions.map((s) => q.eq(q.field("session"), s === "None" ? null : s))));
+        }
+        if (args.years && args.years.length > 0) {
+          conditions.push(q.or(...args.years.map((y) => q.eq(q.field("year"), y))));
+        }
+
+        return q.and(...conditions);
+      }) as any;
+    }
+
+    return await queryObj.paginate(args.paginationOpts);
+  },
+});
+
+// Autocomplete Search Query for lightweight dropdown suggestions
+export const autocomplete = query({
+  args: { query: v.string() },
+  handler: async (ctx, args) => {
+    const q = args.query.trim();
+    if (!q) return [];
+
+    const papers = await ctx.db
+      .query("papers")
+      .withSearchIndex("search_papers", (q2) => q2.search("subject", q))
+      .take(10); // Take a bit more to ensure we get 6 unique after dedup
+
+    // Deduplicate by subject name to avoid showing the same subject multiple times
+    const seen = new Set<string>();
+    const results = [];
+    
+    for (const p of papers) {
+      const key = p.subject.toLowerCase();
+      if (!seen.has(key)) {
+        seen.add(key);
+        results.push({
+          _id: p._id,
+          subject: p.subject,
+          branchSlug: p.branchSlug,
+          semester: p.semester,
+          year: p.year,
+          session: p.session,
+        });
+        if (results.length >= 6) break;
+      }
+    }
+    
+    return results;
   },
 });
 

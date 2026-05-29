@@ -28,6 +28,7 @@ export default function Page({ params }: PageProps) {
   useEffect(() => {
     if (paper) {
       logPaperView({ paperId: paperId as string });
+      document.title = `${paper.subject} | PeerAtlas`;
     }
   }, [paper, paperId, logPaperView]);
 
