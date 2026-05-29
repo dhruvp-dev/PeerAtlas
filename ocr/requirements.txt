@@ -1,0 +1,21 @@
+# PeerAtlas OCR Ingestion Pipeline — Dependencies
+# Install: pip install -r requirements.txt
+
+# Core OCR
+pytesseract>=0.3.10
+pdf2image>=1.17.0
+Pillow>=10.0.0
+
+# PDF manipulation
+pypdf>=4.0.0          # preferred; PyPDF2 is the legacy fallback
+
+# Fuzzy matching
+rapidfuzz>=3.0.0
+
+# Standard library only — no extra install needed:
+#   pathlib, hashlib, re, json, concurrent.futures, argparse, logging
+
+# System dependencies (not installed via pip):
+#   tesseract-ocr    → sudo apt install tesseract-ocr
+#   poppler-utils    → sudo apt install poppler-utils
+#   (macOS: brew install tesseract poppler)
