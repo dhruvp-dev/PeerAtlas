@@ -15,8 +15,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "PeerAtlas — Bharati Vidyapeeth Deemed University Engineering Papers",
-  description: "Find Bharati Vidyapeeth Deemed University engineering previous year question papers in under 5 seconds.",
+  title: "PeerAtlas — BVDU Engineering Previous Year Question Papers",
+  description: "Find Bharati Vidyapeeth Deemed University (BVDU) engineering previous year question papers in under 5 seconds. Free and organized by semester.",
   keywords: [
     "Bharati Vidyapeeth Deemed University",
     "BVDU",
@@ -26,26 +26,26 @@ export const metadata: Metadata = {
     "Pune"
   ],
   openGraph: {
-    title: "PeerAtlas — BVDU Engineering Papers",
-    description: "Find Bharati Vidyapeeth Deemed University engineering previous year question papers in under 5 seconds.",
+    title: "PeerAtlas — BVDU Engineering Previous Year Question Papers",
+    description: "Find Bharati Vidyapeeth Deemed University (BVDU) engineering previous year question papers in under 5 seconds. Free and organized by semester.",
     url: "https://peeratlas.vercel.app",
     siteName: "PeerAtlas",
     locale: "en_US",
     type: "website",
     images: [
       {
-        url: "/og.svg",
+        url: "/og.png",
         width: 1200,
         height: 630,
-        alt: "PeerAtlas — Bharati Vidyapeeth Deemed University Engineering Papers",
+        alt: "PeerAtlas — BVDU Engineering Previous Year Question Papers",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "PeerAtlas — BVDU Engineering Papers",
-    description: "Find Bharati Vidyapeeth Deemed University engineering previous year question papers in under 5 seconds.",
-    images: ["/og.svg"],
+    title: "PeerAtlas — BVDU Engineering Previous Year Question Papers",
+    description: "Find Bharati Vidyapeeth Deemed University (BVDU) engineering previous year question papers in under 5 seconds. Free and organized by semester.",
+    images: ["/og.png"],
   },
 };
 
