@@ -84,15 +84,9 @@
       </g>
 
       <!-- Item 2: Organised Structure -->
-      <g transform="translate(320, 0)">
+      <g transform="translate(450, 0)">
         <circle cx="10" cy="10" r="5" fill="#4a9fd4" />
         <text x="28" y="16" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="15" font-weight="700" fill="#ffffff" letter-spacing="0.8">BY SEMESTER &amp; BRANCH</text>
-      </g>
-
-      <!-- Item 3: Ad-free / Stress-free -->
-      <g transform="translate(650, 0)">
-        <circle cx="10" cy="10" r="5" fill="#4a9fd4" />
-        <text x="28" y="16" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="15" font-weight="700" fill="#ffffff" letter-spacing="0.8">100% AD-FREE &amp; CALM</text>
       </g>
     </g>
 
