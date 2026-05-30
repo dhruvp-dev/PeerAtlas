@@ -1,13 +1,16 @@
 import { betterAuth } from "better-auth";
-import { createClient } from "@libsql/client";
+import { LibsqlDialect } from "@libsql/kysely-libsql";
 
-const db = createClient({
+const dialect = new LibsqlDialect({
   url: process.env.TURSO_DATABASE_URL!,
   authToken: process.env.TURSO_AUTH_TOKEN,
 });
 
 export const auth = betterAuth({
-  database: db,
+  database: {
+    dialect,
+    type: "sqlite",
+  },
   emailAndPassword: {
     enabled: true,
   },
