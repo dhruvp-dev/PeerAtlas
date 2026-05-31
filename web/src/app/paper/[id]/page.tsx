@@ -34,19 +34,17 @@ export default function Page({ params }: PageProps) {
 
   // Retrieve recommendations: papers of same branch and semester
   const relatedPapersQuery = useQuery(
-    api.papers.search,
+    api.papers.getRelated,
     paper
       ? {
-          query: "",
-          branches: [paper.branchSlug],
-          semesters: [paper.semester],
+          branchSlug: paper.branchSlug,
+          semester: paper.semester,
+          currentPaperId: paper._id,
         }
-      : "skip" as any
+      : "skip"
   );
 
-  const relatedPapers = (relatedPapersQuery ?? [])
-    .filter((p) => p._id !== paperId)
-    .slice(0, 3);
+  const relatedPapers = relatedPapersQuery ?? [];
 
   // Copy shareable page link to clipboard
   const handleCopyLink = () => {

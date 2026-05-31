@@ -1,5 +1,6 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { Doc } from "./_generated/dataModel";
 
 // Generate an authorized upload URL for files
 export const generateUploadUrl = mutation({
@@ -65,11 +66,48 @@ export const insertPaperFromIngestion = mutation({
   },
 });
 
+function omitSearchableText(paper: Doc<"papers">) {
+  const { searchableText, ...rest } = paper;
+  return rest as Omit<Doc<"papers">, "searchableText">;
+}
+
 // Retrieve a single paper by ID
 export const get = query({
   args: { id: v.id("papers") },
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.id);
+    const paper = await ctx.db.get(args.id);
+    return paper ? omitSearchableText(paper) : null;
+  },
+});
+
+// Retrieve the latest 4 papers for landing page preview (Lightweight metadata projection)
+export const getLatest = query({
+  args: {},
+  handler: async (ctx) => {
+    const papers = await ctx.db.query("papers").order("desc").take(4);
+    return papers.map(omitSearchableText);
+  },
+});
+
+// Retrieve lightweight related papers matching branch and semester (Index backed lookup)
+export const getRelated = query({
+  args: {
+    branchSlug: v.string(),
+    semester: v.number(),
+    currentPaperId: v.id("papers"),
+  },
+  handler: async (ctx, args) => {
+    const papers = await ctx.db
+      .query("papers")
+      .withIndex("by_filters", (q) =>
+        q.eq("branchSlug", args.branchSlug).eq("semester", args.semester)
+      )
+      .take(10);
+
+    return papers
+      .filter((p) => p._id !== args.currentPaperId)
+      .slice(0, 3)
+      .map(omitSearchableText);
   },
 });
 
@@ -97,22 +135,24 @@ export const search = query({
       papers = await ctx.db.query("papers").order("desc").take(3000);
     }
 
-    // Apply multi-select filter arguments
-    return papers.filter((paper) => {
-      if (args.branches && args.branches.length > 0 && !args.branches.includes(paper.branchSlug)) {
-        return false;
-      }
-      if (args.semesters && args.semesters.length > 0 && !args.semesters.includes(paper.semester)) {
-        return false;
-      }
-      if (args.sessions && args.sessions.length > 0 && !args.sessions.includes(paper.session ?? "")) {
-        return false;
-      }
-      if (args.years && args.years.length > 0 && !args.years.includes(paper.year)) {
-        return false;
-      }
-      return true;
-    });
+    // Apply multi-select filter arguments and map to omit searchableText
+    return papers
+      .filter((paper) => {
+        if (args.branches && args.branches.length > 0 && !args.branches.includes(paper.branchSlug)) {
+          return false;
+        }
+        if (args.semesters && args.semesters.length > 0 && !args.semesters.includes(paper.semester)) {
+          return false;
+        }
+        if (args.sessions && args.sessions.length > 0 && !args.sessions.includes(paper.session ?? "")) {
+          return false;
+        }
+        if (args.years && args.years.length > 0 && !args.years.includes(paper.year)) {
+          return false;
+        }
+        return true;
+      })
+      .map(omitSearchableText);
   },
 });
 
@@ -136,7 +176,7 @@ export const paginatedSearch = query({
 
     if (qTerm) {
       // Convex SearchQuery does not support .paginate() or chaining complex dynamic .filter()
-      // We fetch top matches and apply filters in memory, returning a fake pagination result
+      // We fetch top matches and apply filters in memory, returning a correct offset pagination result
       const papers = await ctx.db
         .query("papers")
         .withSearchIndex("search_papers", (q) => q.search("subject", qTerm))
@@ -150,14 +190,32 @@ export const paginatedSearch = query({
         return true;
       });
 
+      const offset = args.paginationOpts.cursor ? parseInt(args.paginationOpts.cursor, 10) : 0;
+      const paginatedSlice = filteredPapers.slice(offset, offset + args.paginationOpts.numItems);
+      const nextOffset = offset + paginatedSlice.length;
+      const isDone = nextOffset >= filteredPapers.length;
+
       return {
-        page: filteredPapers.slice(0, args.paginationOpts.numItems),
-        isDone: true,
-        continueCursor: "",
+        page: paginatedSlice.map(omitSearchableText),
+        isDone: isDone,
+        continueCursor: isDone ? "" : nextOffset.toString(),
       };
     } else {
-      // Ordered queries natively support .filter() and .paginate()
-      let queryObj = ctx.db.query("papers").order("desc");
+      // Push primary filter criteria to storage using database indexes
+      let queryObj;
+      if (args.branches && args.branches.length > 0) {
+        queryObj = ctx.db
+          .query("papers")
+          .withIndex("by_filters", (q) => q.eq("branchSlug", args.branches![0]))
+          .order("desc");
+      } else if (args.semesters && args.semesters.length > 0) {
+        queryObj = ctx.db
+          .query("papers")
+          .withIndex("by_semester", (q) => q.eq("semester", args.semesters![0]))
+          .order("desc");
+      } else {
+        queryObj = ctx.db.query("papers").order("desc");
+      }
 
       if (hasFilters) {
         queryObj = queryObj.filter((q) => {
@@ -178,7 +236,11 @@ export const paginatedSearch = query({
         }) as any;
       }
 
-      return await queryObj.paginate(args.paginationOpts);
+      const paginatedResults = await queryObj.paginate(args.paginationOpts);
+      return {
+        ...paginatedResults,
+        page: paginatedResults.page.map(omitSearchableText),
+      };
     }
   },
 });
@@ -282,9 +344,10 @@ export const deletePaper = mutation({
 export const getAdminStats = query({
   args: {},
   handler: async (ctx) => {
-    const papers = await ctx.db.query("papers").collect();
-    const views = await ctx.db.query("paperViews").collect();
-    const searches = await ctx.db.query("searchLogs").collect();
+    // Cap at a high limit to avoid unbounded document scan timeouts, while preserving correctness
+    const papers = await ctx.db.query("papers").take(10000);
+    const views = await ctx.db.query("paperViews").take(10000);
+    const searches = await ctx.db.query("searchLogs").take(10000);
 
     return {
       totalPapers: papers.length,
@@ -298,7 +361,13 @@ export const getAdminStats = query({
 export const getTopSearches = query({
   args: {},
   handler: async (ctx) => {
-    const searches = await ctx.db.query("searchLogs").collect();
+    // Only analyze the last 5,000 searches to protect database reads at scale
+    const searches = await ctx.db
+      .query("searchLogs")
+      .withIndex("by_timestamp")
+      .order("desc")
+      .take(5000);
+      
     const counts: Record<string, number> = {};
 
     searches.forEach((s) => {
@@ -317,7 +386,13 @@ export const getTopSearches = query({
 export const getTopViewed = query({
   args: {},
   handler: async (ctx) => {
-    const views = await ctx.db.query("paperViews").collect();
+    // Only analyze the last 5,000 views to protect database reads at scale
+    const views = await ctx.db
+      .query("paperViews")
+      .withIndex("by_timestamp")
+      .order("desc")
+      .take(5000);
+      
     const counts: Record<string, number> = {};
 
     views.forEach((v) => {

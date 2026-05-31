@@ -377,7 +377,7 @@ function BrowseContent() {
                     {paper.subject}
                   </h3>
                   <div className="mt-1 flex flex-wrap gap-1">
-                    {paper.keywords?.slice(0, 2).map((k) => (
+                    {paper.keywords?.slice(0, 2).map((k: string) => (
                       <span
                         key={k}
                         className="rounded bg-mist px-1.5 py-0.5 text-[10px] font-medium text-navy-mid/70 select-none"

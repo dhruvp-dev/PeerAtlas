@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Search, Edit2, Trash2, X, AlertTriangle, Loader2 } from "lucide-react";
-import { useQuery, useMutation } from "convex/react";
+import { useMutation, usePaginatedQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 
 type Paper = {
@@ -18,11 +18,15 @@ type Paper = {
 };
 
 export default function Page() {
-  // Query papers
+  // Query papers with pagination
   const [searchTerm, setSearchTerm] = useState("");
-  const rawPapers = useQuery(api.papers.search, { query: searchTerm });
-  const papers = (rawPapers ?? []) as Paper[];
-  const isLoading = rawPapers === undefined;
+  const { results, status, loadMore } = usePaginatedQuery(
+    api.papers.paginatedSearch,
+    { query: searchTerm },
+    { initialNumItems: 50 }
+  );
+  const papers = results as Paper[];
+  const isLoading = status === "LoadingFirstPage";
 
   // Mutations
   const updatePaperMutation = useMutation(api.papers.updatePaper);
@@ -197,6 +201,23 @@ export default function Page() {
           </table>
         </div>
       </div>
+
+      {/* Pagination Controls */}
+      {status === "CanLoadMore" && (
+        <div className="mt-4 flex justify-center">
+          <button
+            onClick={() => loadMore(50)}
+            className="flex h-9 items-center justify-center rounded-btn border border-border bg-white px-4 text-xs font-semibold text-navy-deep hover:bg-mist/30 focus:outline-none transition-hover cursor-pointer"
+          >
+            Load More Papers
+          </button>
+        </div>
+      )}
+      {status === "LoadingMore" && (
+        <div className="mt-4 flex justify-center">
+          <Loader2 className="h-5 w-5 animate-spin text-sky-blue" />
+        </div>
+      )}
 
       {/* Absolute Edit Modal */}
       {editingPaper && (

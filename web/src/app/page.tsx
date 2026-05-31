@@ -8,13 +8,13 @@ import { HeroClient } from "@/components/hero-client";
 export default async function Page() {
   let livePapers;
   try {
-    livePapers = await fetchQuery(api.papers.search, { query: "" });
+    livePapers = await fetchQuery(api.papers.getLatest);
   } catch (e) {
     console.error("Failed to fetch papers from Convex", e);
     livePapers = null;
   }
 
-  const papers = livePapers ? livePapers.slice(0, 4) : MOCK_PAPERS.slice(0, 4);
+  const papers = livePapers ? livePapers : MOCK_PAPERS.slice(0, 4);
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center px-5 py-8 md:py-12 animate-fade-up">
