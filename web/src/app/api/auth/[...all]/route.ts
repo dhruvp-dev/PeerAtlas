@@ -42,7 +42,6 @@ async function seedAdminIfNeeded() {
         },
       });
       
-      console.log("[Better Auth] Default administrator account seeded successfully.");
     }
     isSeeded = true;
   } catch (err: any) {

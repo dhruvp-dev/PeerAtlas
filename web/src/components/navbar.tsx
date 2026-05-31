@@ -32,8 +32,8 @@ export default function Navbar() {
       <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-5 md:px-10">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 group">
-          <Image src="/Peer_Logo.svg" alt="" width={24} height={24} className="w-6 h-6 shrink-0 logo-light" />
-          <Image src="/Dark_Peer_Logo.svg" alt="" width={24} height={24} className="w-6 h-6 shrink-0 logo-dark" />
+          <Image src="/Peer_Logo.svg" alt="PeerAtlas" width={24} height={24} className="w-6 h-6 shrink-0 logo-light" />
+          <Image src="/Dark_Peer_Logo.svg" alt="PeerAtlas" width={24} height={24} className="w-6 h-6 shrink-0 logo-dark" />
           <span className="text-lg font-bold tracking-tight text-navy-deep font-sans">
             Peer<span className="text-sky-blue font-medium transition-colors group-hover:text-navy-mid">Atlas</span>
           </span>

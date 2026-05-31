@@ -8,8 +8,8 @@ export default function Footer() {
         {/* Left Side */}
         <div className="text-center md:text-left">
           <div className="flex items-center justify-center md:justify-start gap-2">
-            <Image src="/Peer_Logo.svg" alt="" width={20} height={20} className="w-5 h-5 shrink-0 logo-light" />
-            <Image src="/Dark_Peer_Logo.svg" alt="" width={20} height={20} className="w-5 h-5 shrink-0 logo-dark" />
+            <Image src="/Peer_Logo.svg" alt="PeerAtlas" width={20} height={20} className="w-5 h-5 shrink-0 logo-light" />
+            <Image src="/Dark_Peer_Logo.svg" alt="PeerAtlas" width={20} height={20} className="w-5 h-5 shrink-0 logo-dark" />
             <span className="text-base font-bold tracking-tight text-navy-deep font-sans">
               Peer<span className="text-sky-blue font-medium">Atlas</span>
             </span>

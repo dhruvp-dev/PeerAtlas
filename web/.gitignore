@@ -45,6 +45,7 @@ CLAUDE.md
 # better-auth database
 auth.db
 auth.db-journal
+auth.db.backup
 
 # agent histories
 .agents/

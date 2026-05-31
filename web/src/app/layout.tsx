@@ -6,6 +6,7 @@ import { ConvexClientProvider } from "@/components/convex-client-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { getWebsiteSchema } from "@/lib/structured-data";
 import "./globals.css";
 
 const inter = Inter({
@@ -23,12 +24,25 @@ export const metadata: Metadata = {
     "Engineering Papers",
     "Previous Year Question Papers",
     "B.Tech",
-    "Pune"
+    "Pune",
+    "Pune University",
+    "Exam Preparation",
+    "Engineering Student Resources",
   ],
+  metadataBase: new URL("https://peeratlas.qzz.io"),
+  alternates: {
+    canonical: "/",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+  authors: [{ name: "Dhruv Pandey" }],
+  creator: "Dhruv Pandey",
   openGraph: {
     title: "PeerAtlas — BVDU Engineering Previous Year Question Papers",
     description: "Find Bharati Vidyapeeth Deemed University (BVDU) engineering previous year question papers in under 5 seconds. Free and organized by semester.",
-    url: "https://peeratlas.vercel.app",
+    url: "https://peeratlas.qzz.io",
     siteName: "PeerAtlas",
     locale: "en_US",
     type: "website",
@@ -60,6 +74,14 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${inter.variable} h-full antialiased`}
     >
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(getWebsiteSchema()),
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col bg-background text-foreground font-sans">
         <ThemeProvider
           attribute="class"

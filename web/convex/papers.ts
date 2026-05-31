@@ -425,3 +425,15 @@ export const getTopViewed = query({
     return result;
   },
 });
+
+// Lightweight query for sitemap generation
+export const getAllIds = query({
+  args: {},
+  handler: async (ctx) => {
+    const papers = await ctx.db.query("papers").order("desc").collect();
+    return papers.map((p) => ({
+      _id: p._id,
+      createdAt: p.createdAt,
+    }));
+  },
+});
