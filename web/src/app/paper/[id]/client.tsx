@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, Download, Link2, Calendar, FileText, LayoutGrid, CheckCircle } from "lucide-react";
 import { useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
+import { Analytics } from "@/lib/analytics";
 
 interface PaperClientProps {
   paper: any;
@@ -21,6 +22,7 @@ export default function PaperClient({ paper, relatedPapers }: PaperClientProps) 
   useEffect(() => {
     if (paper) {
       logPaperView({ paperId: paper._id as string });
+      Analytics.paperView(paper.subject, paper.semester, paper._id as string);
     }
   }, [paper, logPaperView]);
 
@@ -29,6 +31,9 @@ export default function PaperClient({ paper, relatedPapers }: PaperClientProps) 
     navigator.clipboard.writeText(window.location.href);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
+    if (paper) {
+      Analytics.paperShared(paper._id as string, paper.subject, "copy_link");
+    }
   };
 
 
@@ -86,6 +91,7 @@ export default function PaperClient({ paper, relatedPapers }: PaperClientProps) 
                 download={`${paper.subjectSlug}_${paper.year}.pdf`}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => Analytics.paperDownload(paper._id as string, paper.subject)}
                 className="flex h-9 items-center gap-1.5 rounded-btn bg-sky-blue px-3.5 text-xs font-semibold text-white transition-hover hover:bg-navy-deep shadow-sm"
               >
                 <Download className="h-3.5 w-3.5" />

@@ -6,6 +6,7 @@ import { ConvexClientProvider } from "@/components/convex-client-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { ClarityAnalytics } from "@/components/clarity-analytics";
 import { getWebsiteSchema } from "@/lib/structured-data";
 import "./globals.css";
 
@@ -97,6 +98,7 @@ export default function RootLayout({
             <Footer />
             <Analytics />
             <SpeedInsights />
+            <ClarityAnalytics />
           </ConvexClientProvider>
         </ThemeProvider>
       </body>

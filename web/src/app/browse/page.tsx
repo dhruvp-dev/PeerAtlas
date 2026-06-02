@@ -7,6 +7,7 @@ import { useQuery, useMutation, usePaginatedQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { SearchAutocomplete } from "@/components/search-autocomplete";
 import { slugify } from "@/lib/utils";
+import { Analytics } from "@/lib/analytics";
 
 type FilterKey = "branch" | "semester" | "session" | "year";
 
@@ -139,10 +140,11 @@ function BrowseContent() {
 
     const delayDebounce = setTimeout(() => {
       logSearch({ query: trimmed });
+      Analytics.searchPerformed(trimmed, papers.length);
     }, 1500);
 
     return () => clearTimeout(delayDebounce);
-  }, [query, logSearch]);
+  }, [query, logSearch, papers.length]);
 
   // Multi-select toggle handler
   const toggleFilterOption = (key: FilterKey, val: string) => {
@@ -151,6 +153,11 @@ function BrowseContent() {
       const next = current.includes(val)
         ? current.filter((x) => x !== val)
         : [...current, val];
+      
+      // Track Clarity analytics when a filter is applied (selected)
+      if (!current.includes(val)) {
+        Analytics.browseFilterApplied(key, val);
+      }
       return { ...prev, [key]: next };
     });
   };
