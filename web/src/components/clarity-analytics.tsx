@@ -2,12 +2,12 @@
 
 import Script from "next/script";
 
-const CLARITY_ID = process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID;
-
 export function ClarityAnalytics() {
+  const clarityId = process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID;
+
   // Only initialize in production and when the Project ID is present.
   // This prevents cluttering analytics during local development.
-  if (!CLARITY_ID || process.env.NODE_ENV !== "production") {
+  if (!clarityId || process.env.NODE_ENV !== "production") {
     return null;
   }
 
@@ -21,7 +21,7 @@ export function ClarityAnalytics() {
             c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
             t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
             y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-          })(window, document, "clarity", "script", "${CLARITY_ID}");
+          })(window, document, "clarity", "script", "${clarityId}");
         `,
       }}
     />
