@@ -8,6 +8,7 @@ import { api } from "../../../convex/_generated/api";
 import { SearchAutocomplete } from "@/components/search-autocomplete";
 import { slugify } from "@/lib/utils";
 import { Analytics } from "@/lib/analytics";
+import { usePostHogAnalytics } from "@/lib/posthog";
 
 type FilterKey = "branch" | "semester" | "session" | "year";
 
@@ -86,6 +87,8 @@ function BrowseContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const initialQuery = searchParams.get("q") || "";
+  const { trackEvent } = usePostHogAnalytics();
+  const lastLoggedRef = useRef<{ query: string; branch: string[]; semester: string[] } | null>(null);
 
   // State for search query and active filters
   const [query, setQuery] = useState(initialQuery);
@@ -136,15 +139,44 @@ function BrowseContent() {
   // Debounced search logs analytics
   useEffect(() => {
     const trimmed = query.trim();
-    if (!trimmed) return;
+    if (!trimmed || isLoading) return;
+
+    const currentBranch = selectedFilters.branch;
+    const currentSemester = selectedFilters.semester;
+
+    // Check if this search with these filters has already been logged
+    const isSameSearch = lastLoggedRef.current &&
+      lastLoggedRef.current.query === trimmed &&
+      JSON.stringify(lastLoggedRef.current.branch) === JSON.stringify(currentBranch) &&
+      JSON.stringify(lastLoggedRef.current.semester) === JSON.stringify(currentSemester);
+
+    if (isSameSearch) return;
 
     const delayDebounce = setTimeout(() => {
       logSearch({ query: trimmed });
       Analytics.searchPerformed(trimmed, papers.length);
+
+      const props = {
+        search_query: trimmed,
+        branch: currentBranch.length > 0 ? currentBranch : undefined,
+        semester: currentSemester.length > 0 ? currentSemester : undefined,
+      };
+
+      if (papers.length > 0) {
+        trackEvent("search_performed", props);
+      } else {
+        trackEvent("search_no_results", props);
+      }
+
+      lastLoggedRef.current = {
+        query: trimmed,
+        branch: [...currentBranch],
+        semester: [...currentSemester]
+      };
     }, 1500);
 
     return () => clearTimeout(delayDebounce);
-  }, [query, logSearch, papers.length]);
+  }, [query, isLoading, papers.length, selectedFilters.branch, selectedFilters.semester, logSearch, trackEvent]);
 
   // Multi-select toggle handler
   const toggleFilterOption = (key: FilterKey, val: string) => {

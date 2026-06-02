@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { ArrowLeft, Download, Link2, Calendar, FileText, LayoutGrid, CheckCircle } from "lucide-react";
 import { useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { Analytics } from "@/lib/analytics";
+import { usePostHogAnalytics } from "@/lib/posthog";
 
 interface PaperClientProps {
   paper: any;
@@ -14,17 +15,29 @@ interface PaperClientProps {
 
 export default function PaperClient({ paper, relatedPapers }: PaperClientProps) {
   const logPaperView = useMutation(api.papers.logPaperView);
+  const { trackEvent } = usePostHogAnalytics();
+  const hasTracked = useRef(false);
 
   // States
   const [copied, setCopied] = useState(false);
 
   // Log view analytic trigger exactly once when component loads
   useEffect(() => {
-    if (paper) {
+    if (paper && !hasTracked.current) {
+      hasTracked.current = true;
       logPaperView({ paperId: paper._id as string });
       Analytics.paperView(paper.subject, paper.semester, paper._id as string);
+      
+      trackEvent("paper_viewed", {
+        paper_id: paper._id as string,
+        paper_name: `${paper.subject} - ${paper.session ?? ""} ${paper.year}`,
+        subject: paper.subject,
+        semester: paper.semester,
+        year: paper.year,
+        branch: paper.branch,
+      });
     }
-  }, [paper, logPaperView]);
+  }, [paper, logPaperView, trackEvent]);
 
   // Copy shareable page link to clipboard
   const handleCopyLink = () => {
@@ -91,7 +104,17 @@ export default function PaperClient({ paper, relatedPapers }: PaperClientProps) 
                 download={`${paper.subjectSlug}_${paper.year}.pdf`}
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={() => Analytics.paperDownload(paper._id as string, paper.subject)}
+                onClick={() => {
+                  Analytics.paperDownload(paper._id as string, paper.subject);
+                  trackEvent("paper_downloaded", {
+                    paper_id: paper._id as string,
+                    paper_name: `${paper.subject} - ${paper.session ?? ""} ${paper.year}`,
+                    subject: paper.subject,
+                    semester: paper.semester,
+                    year: paper.year,
+                    branch: paper.branch,
+                  });
+                }}
                 className="flex h-9 items-center gap-1.5 rounded-btn bg-sky-blue px-3.5 text-xs font-semibold text-white transition-hover hover:bg-navy-deep shadow-sm"
               >
                 <Download className="h-3.5 w-3.5" />

@@ -9,6 +9,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ClarityAnalytics } from "@/components/clarity-analytics";
 import { getWebsiteSchema } from "@/lib/structured-data";
+import { PHProvider, SuspendedPostHogPageView } from "@/components/posthog-provider";
 import "./globals.css";
 
 const inter = Inter({
@@ -96,14 +97,17 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <ConvexClientProvider>
-            <Navbar />
-            <main className="flex-1 flex flex-col">
-              {children}
-            </main>
-            <Footer />
-            <Analytics />
-            <SpeedInsights />
-            <ClarityAnalytics />
+            <PHProvider>
+              <SuspendedPostHogPageView />
+              <Navbar />
+              <main className="flex-1 flex flex-col">
+                {children}
+              </main>
+              <Footer />
+              <Analytics />
+              <SpeedInsights />
+              <ClarityAnalytics />
+            </PHProvider>
           </ConvexClientProvider>
         </ThemeProvider>
       </body>
