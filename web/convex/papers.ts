@@ -102,6 +102,7 @@ export const getRelated = query({
       .withIndex("by_filters", (q) =>
         q.eq("branchSlug", args.branchSlug).eq("semester", args.semester)
       )
+      .order("desc")
       .take(10);
 
     return papers
