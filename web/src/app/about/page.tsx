@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <div className="mx-auto w-full max-w-2xl px-5 py-12 md:py-16 animate-fade-up">
+    <div className="mx-auto w-full max-w-2xl px-5 pt-12 pb-8 md:pt-16 md:pb-10 animate-fade-up">
       {/* Page Header */}
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-navy-deep sm:text-3xl font-sans">
@@ -100,6 +100,11 @@ export default function AboutPage() {
             </a>
           </div>
         </div>
+      </div>
+
+      {/* Analytics Notice Footnote */}
+      <div className="mt-10 border-t border-border/40 pt-4 text-[11px] leading-relaxed text-navy-mid/45">
+        Anonymous usage analytics help improve PeerAtlas and identify the papers students find most useful.
       </div>
     </div>
   );
