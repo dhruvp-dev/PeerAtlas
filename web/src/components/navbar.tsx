@@ -57,15 +57,18 @@ export default function Navbar() {
               </Link>
             );
           })}
-          <a
-            href="https://github.com/dhruvp-dev/PeerAtlas"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[14px] font-medium text-navy-mid/70 hover:text-navy-deep transition-colors duration-150"
-          >
-            GitHub
-          </a>
-          <ThemeToggle />
+          <div className="flex items-center gap-3">
+            <a
+              href="https://github.com/dhruvp-dev/PeerAtlas"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex h-9 w-9 items-center justify-center rounded-btn border border-border bg-card hover:bg-muted transition-colors text-foreground dark:bg-background dark:border-border dark:hover:bg-muted dark:text-foreground"
+              aria-label="GitHub Repository"
+            >
+              <GithubIcon className="h-4 w-4" />
+            </a>
+            <ThemeToggle />
+          </div>
         </nav>
 
         {/* Mobile Actions */}
