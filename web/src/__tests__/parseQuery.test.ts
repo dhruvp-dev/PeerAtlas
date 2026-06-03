@@ -9,6 +9,11 @@ describe("parseQuery Helper Function", () => {
     expect(result.semesters).toEqual([]);
   });
 
+  it("should normalize the query text to lowercase", () => {
+    const result = parseQuery("DATABASE Management SYSTEMS");
+    expect(result.query).toBe("database management systems");
+  });
+
   it("should extract semester patterns correctly", () => {
     const testCases = [
       { input: "database sem 3", expectedSem: [3] },

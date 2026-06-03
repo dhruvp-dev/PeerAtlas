@@ -132,8 +132,8 @@ export function parseQuery(rawQuery: string) {
     }
   }
 
-  // Clean up multiple spaces and trim
-  cleanedQuery = cleanedQuery.replace(/\s+/g, " ").trim();
+  // Clean up multiple spaces, trim, and normalize to lowercase
+  cleanedQuery = cleanedQuery.replace(/\s+/g, " ").trim().toLowerCase();
 
   return {
     query: cleanedQuery,
