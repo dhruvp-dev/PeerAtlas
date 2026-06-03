@@ -71,6 +71,78 @@ function omitSearchableText(paper: Doc<"papers">) {
   return rest as Omit<Doc<"papers">, "searchableText">;
 }
 
+export function parseQuery(rawQuery: string) {
+  const semesters: number[] = [];
+  const branches: string[] = [];
+  let cleanedQuery = rawQuery;
+
+  // 1. Extract Semesters
+  const semesterRegex = /\b(?:sem(?:ester)?\s*([1-8])|([1-8])(?:st|nd|nd|rd|th)?\s*sem(?:ester)?)\b/gi;
+  let match;
+  while ((match = semesterRegex.exec(cleanedQuery)) !== null) {
+    const semNum = match[1] || match[2];
+    if (semNum) {
+      semesters.push(parseInt(semNum, 10));
+    }
+  }
+  cleanedQuery = cleanedQuery.replace(semesterRegex, " ");
+
+  // 2. Extract Branches
+  const BRANCH_MAPPINGS = [
+    {
+      slugs: ["computer-science-and-engineering"],
+      regex: /\b(?:cse|computer\s+science(?:\s+and\s+engineering)?)\b/gi
+    },
+    {
+      slugs: ["information-technology"],
+      regex: /\b(?:it|information\s+technology)\b/gi
+    },
+    {
+      slugs: ["artificial-intelligence-and-machine-learning", "aiml"],
+      regex: /\b(?:aiml|ai\s+ml|ai\/ml|ai\s*&\s*ml|artificial\s+intelligence(?:\s+and\s+machine\s+learning)?|machine\s+learning)\b/gi
+    },
+    {
+      slugs: ["computer-science-and-business-systems", "csbs"],
+      regex: /\b(?:csbs|computer\s+science\s+and\s+business\s+systems|business\s+systems)\b/gi
+    },
+    {
+      slugs: ["electronics-and-telecommunication-engineering", "ece"],
+      regex: /\b(?:entc|extc|etc|ece|electronics(?:\s+and\s+telecommunication)?|electronics\s+and\s+telecommunication\s+engineering|telecommunication)\b/gi
+    },
+    {
+      slugs: ["civil-engineering"],
+      regex: /\b(?:civil(?:\s+engineering)?)\b/gi
+    },
+    {
+      slugs: ["mechanical-engineering"],
+      regex: /\b(?:mech|mechanical(?:\s+engineering)?)\b/gi
+    },
+    {
+      slugs: ["chemical-engineering"],
+      regex: /\b(?:chem|chemical(?:\s+engineering)?)\b/gi
+    }
+  ];
+
+  for (const mapping of BRANCH_MAPPINGS) {
+    mapping.regex.lastIndex = 0;
+    if (mapping.regex.test(cleanedQuery)) {
+      branches.push(...mapping.slugs);
+      mapping.regex.lastIndex = 0;
+      cleanedQuery = cleanedQuery.replace(mapping.regex, " ");
+    }
+  }
+
+  // Clean up multiple spaces and trim
+  cleanedQuery = cleanedQuery.replace(/\s+/g, " ").trim();
+
+  return {
+    query: cleanedQuery,
+    branches,
+    semesters
+  };
+}
+
+
 // Retrieve a single paper by ID
 export const get = query({
   args: { id: v.id("papers") },
@@ -122,8 +194,24 @@ export const search = query({
     years: v.optional(v.array(v.number())),
   },
   handler: async (ctx, args) => {
+    const { query: parsedQueryText, branches: parsedBranches, semesters: parsedSemesters } = parseQuery(args.query);
+    const qTerm = parsedQueryText.trim();
+
+    const mergedBranches = [
+      ...new Set([
+        ...(args.branches ?? []),
+        ...parsedBranches
+      ])
+    ];
+
+    const mergedSemesters = [
+      ...new Set([
+        ...(args.semesters ?? []),
+        ...parsedSemesters
+      ])
+    ];
+
     let papers = [];
-    const qTerm = args.query.trim();
 
     if (qTerm) {
       // 1. Perform full-text search matching on the subject field
@@ -132,17 +220,31 @@ export const search = query({
         .withSearchIndex("search_papers", (q) => q.search("subject", qTerm))
         .take(3000);
     } else {
-      // 2. Fetch the latest papers
-      papers = await ctx.db.query("papers").order("desc").take(3000);
+      // 2. Fetch papers matching parsed/merged branches or semesters if no search text
+      let queryObj;
+      if (mergedBranches.length > 0) {
+        queryObj = ctx.db
+          .query("papers")
+          .withIndex("by_filters", (q) => q.eq("branchSlug", mergedBranches[0]))
+          .order("desc");
+      } else if (mergedSemesters.length > 0) {
+        queryObj = ctx.db
+          .query("papers")
+          .withIndex("by_semester", (q) => q.eq("semester", mergedSemesters[0]))
+          .order("desc");
+      } else {
+        queryObj = ctx.db.query("papers").order("desc");
+      }
+      papers = await queryObj.take(3000);
     }
 
     // Apply multi-select filter arguments and map to omit searchableText
     return papers
       .filter((paper) => {
-        if (args.branches && args.branches.length > 0 && !args.branches.includes(paper.branchSlug)) {
+        if (mergedBranches.length > 0 && !mergedBranches.includes(paper.branchSlug)) {
           return false;
         }
-        if (args.semesters && args.semesters.length > 0 && !args.semesters.includes(paper.semester)) {
+        if (mergedSemesters.length > 0 && !mergedSemesters.includes(paper.semester)) {
           return false;
         }
         if (args.sessions && args.sessions.length > 0 && !args.sessions.includes(paper.session ?? "")) {
@@ -169,9 +271,25 @@ export const paginatedSearch = query({
     years: v.optional(v.array(v.number())),
   },
   handler: async (ctx, args) => {
-    const qTerm = args.query.trim();
-    const hasFilters = (args.branches && args.branches.length > 0) || 
-                       (args.semesters && args.semesters.length > 0) || 
+    const { query: parsedQueryText, branches: parsedBranches, semesters: parsedSemesters } = parseQuery(args.query);
+    const qTerm = parsedQueryText.trim();
+
+    const mergedBranches = [
+      ...new Set([
+        ...(args.branches ?? []),
+        ...parsedBranches
+      ])
+    ];
+
+    const mergedSemesters = [
+      ...new Set([
+        ...(args.semesters ?? []),
+        ...parsedSemesters
+      ])
+    ];
+
+    const hasFilters = mergedBranches.length > 0 || 
+                       mergedSemesters.length > 0 || 
                        (args.sessions && args.sessions.length > 0) || 
                        (args.years && args.years.length > 0);
 
@@ -184,8 +302,8 @@ export const paginatedSearch = query({
         .take(200);
         
       const filteredPapers = papers.filter((paper) => {
-        if (args.branches && args.branches.length > 0 && !args.branches.includes(paper.branchSlug)) return false;
-        if (args.semesters && args.semesters.length > 0 && !args.semesters.includes(paper.semester)) return false;
+        if (mergedBranches.length > 0 && !mergedBranches.includes(paper.branchSlug)) return false;
+        if (mergedSemesters.length > 0 && !mergedSemesters.includes(paper.semester)) return false;
         if (args.sessions && args.sessions.length > 0 && !args.sessions.includes(paper.session ?? "")) return false;
         if (args.years && args.years.length > 0 && !args.years.includes(paper.year)) return false;
         return true;
@@ -204,15 +322,15 @@ export const paginatedSearch = query({
     } else {
       // Push primary filter criteria to storage using database indexes
       let queryObj;
-      if (args.branches && args.branches.length > 0) {
+      if (mergedBranches.length > 0) {
         queryObj = ctx.db
           .query("papers")
-          .withIndex("by_filters", (q) => q.eq("branchSlug", args.branches![0]))
+          .withIndex("by_filters", (q) => q.eq("branchSlug", mergedBranches[0]))
           .order("desc");
-      } else if (args.semesters && args.semesters.length > 0) {
+      } else if (mergedSemesters.length > 0) {
         queryObj = ctx.db
           .query("papers")
-          .withIndex("by_semester", (q) => q.eq("semester", args.semesters![0]))
+          .withIndex("by_semester", (q) => q.eq("semester", mergedSemesters[0]))
           .order("desc");
       } else {
         queryObj = ctx.db.query("papers").order("desc");
@@ -221,11 +339,11 @@ export const paginatedSearch = query({
       if (hasFilters) {
         queryObj = queryObj.filter((q) => {
           const conditions = [];
-          if (args.branches && args.branches.length > 0) {
-            conditions.push(q.or(...args.branches.map((b) => q.eq(q.field("branchSlug"), b))));
+          if (mergedBranches.length > 0) {
+            conditions.push(q.or(...mergedBranches.map((b) => q.eq(q.field("branchSlug"), b))));
           }
-          if (args.semesters && args.semesters.length > 0) {
-            conditions.push(q.or(...args.semesters.map((s) => q.eq(q.field("semester"), s))));
+          if (mergedSemesters.length > 0) {
+            conditions.push(q.or(...mergedSemesters.map((s) => q.eq(q.field("semester"), s))));
           }
           if (args.sessions && args.sessions.length > 0) {
             conditions.push(q.or(...args.sessions.map((s) => q.eq(q.field("session"), s === "None" ? null : s))));
@@ -250,13 +368,41 @@ export const paginatedSearch = query({
 export const autocomplete = query({
   args: { query: v.string() },
   handler: async (ctx, args) => {
-    const q = args.query.trim();
-    if (!q) return [];
+    const { query: parsedQueryText, branches: parsedBranches, semesters: parsedSemesters } = parseQuery(args.query);
+    const q = parsedQueryText.trim();
+    if (!q && parsedBranches.length === 0 && parsedSemesters.length === 0) return [];
 
-    const papers = await ctx.db
-      .query("papers")
-      .withSearchIndex("search_papers", (q2) => q2.search("subject", q))
-      .take(10); // Take a bit more to ensure we get 6 unique after dedup
+    let papers = [];
+    if (q) {
+      papers = await ctx.db
+        .query("papers")
+        .withSearchIndex("search_papers", (q2) => q2.search("subject", q))
+        .take(50);
+    } else {
+      // If query text is empty but we have parsed filters, query by them
+      let queryObj;
+      if (parsedBranches.length > 0) {
+        queryObj = ctx.db
+          .query("papers")
+          .withIndex("by_filters", (q2) => q2.eq("branchSlug", parsedBranches[0]))
+          .order("desc");
+      } else if (parsedSemesters.length > 0) {
+        queryObj = ctx.db
+          .query("papers")
+          .withIndex("by_semester", (q2) => q2.eq("semester", parsedSemesters[0]))
+          .order("desc");
+      } else {
+        queryObj = ctx.db.query("papers").order("desc");
+      }
+      papers = await queryObj.take(50);
+    }
+
+    // Now filter matches in-memory by parsed filters if there was a text query or multiple filters
+    papers = papers.filter((paper) => {
+      if (parsedBranches.length > 0 && !parsedBranches.includes(paper.branchSlug)) return false;
+      if (parsedSemesters.length > 0 && !parsedSemesters.includes(paper.semester)) return false;
+      return true;
+    });
 
     // Deduplicate by subject name to avoid showing the same subject multiple times
     const seen = new Set<string>();

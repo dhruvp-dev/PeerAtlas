@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Search } from "lucide-react";
+import { Search, ArrowRight } from "lucide-react";
 import { useClickOutside } from "@/lib/hooks";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
@@ -130,11 +130,25 @@ export function SearchAutocomplete({
           className={`h-14 w-full rounded-search border border-border bg-white pl-12 pr-[64px] text-[15px] font-medium text-navy-deep placeholder:text-navy-mid/35 transition-hover focus:border-sky-blue focus:outline-none focus:ring-[3px] focus:ring-sky-blue/15 ${inputClassName}`}
         />
 
-        {/* Shortcut Badge */}
-        {showShortcut && (
-          <div className="absolute right-4 flex items-center gap-0.5 rounded-md border border-border bg-mist px-2 py-0.5 text-[12px] font-semibold text-navy-mid/50 select-none pointer-events-none z-10">
-            /
-          </div>
+        {/* Submit Arrow Button or Shortcut Badge */}
+        {value.trim().length > 0 || isFocused ? (
+          <button
+            type="button"
+            onClick={() => {
+              onSelect(value);
+              setIsFocused(false);
+            }}
+            aria-label="Submit search"
+            className="absolute right-3 flex h-8 w-8 items-center justify-center rounded-full bg-sky-blue hover:bg-navy-deep text-white transition-colors duration-200 cursor-pointer z-10 shadow-sm"
+          >
+            <ArrowRight className="h-4.5 w-4.5" />
+          </button>
+        ) : (
+          showShortcut && (
+            <div className="absolute right-4 flex items-center gap-0.5 rounded-md border border-border bg-mist px-2 py-0.5 text-[12px] font-semibold text-navy-mid/50 select-none pointer-events-none z-10">
+              /
+            </div>
+          )
         )}
       </div>
 
