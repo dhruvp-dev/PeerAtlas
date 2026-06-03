@@ -46,8 +46,8 @@ export const insertPaperFromIngestion = mutation({
 
     // 3. Insert paper document into papers table
     const id = await ctx.db.insert("papers", {
-      branch: args.branch,
-      branchSlug: args.branchSlug,
+      branch: normalizeBranchName(args.branch),
+      branchSlug: normalizeBranchSlug(args.branchSlug),
       semester: args.semester,
       subject: args.subject,
       subjectSlug: args.subjectSlug,
@@ -71,69 +71,115 @@ function omitSearchableText(paper: Doc<"papers">) {
   return rest as Omit<Doc<"papers">, "searchableText">;
 }
 
+const slugify = (text: string) =>
+  text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)+/g, "");
+
+export function normalizeBranchSlug(slug: string): string {
+  const s = slug.toLowerCase().trim();
+  if (
+    s === "computer-science-and-engineering" ||
+    s === "computer-engineering" ||
+    s === "cse" ||
+    s === "cs"
+  ) {
+    return "computer-science-and-engineering";
+  }
+  if (
+    s === "electronics-and-communication-engineering" ||
+    s === "electronics-and-telecommunication-engineering" ||
+    s === "electronics-and-telecommunication" ||
+    s === "ece" ||
+    s === "entc" ||
+    s === "extc" ||
+    s === "etc"
+  ) {
+    return "electronics-and-communication-engineering";
+  }
+  return s;
+}
+
+export function normalizeBranchName(name: string): string {
+  const n = name.trim();
+  const slug = normalizeBranchSlug(slugify(n));
+  if (slug === "computer-science-and-engineering") {
+    return "Computer Science and Engineering";
+  }
+  if (slug === "electronics-and-communication-engineering") {
+    return "Electronics and Communication Engineering";
+  }
+  return n;
+}
+
 export function parseQuery(rawQuery: string) {
   const semesters: number[] = [];
   const branches: string[] = [];
-  let cleanedQuery = rawQuery;
+  let cleanedQuery = rawQuery.toLowerCase();
 
   // 1. Extract Semesters
-  const semesterRegex = /\b(?:sem(?:ester)?\s*([1-8])|([1-8])(?:st|nd|nd|rd|th)?\s*sem(?:ester)?)\b/gi;
+  const semesterRegex = /\b(?:sem(?:ester)?\s*([1-8])|s([1-8])|([1-8])(?:st|nd|rd|th)?\s*sem(?:ester)?)\b/gi;
   let match;
   while ((match = semesterRegex.exec(cleanedQuery)) !== null) {
-    const semNum = match[1] || match[2];
+    const semNum = match[1] || match[2] || match[3];
     if (semNum) {
       semesters.push(parseInt(semNum, 10));
     }
   }
   cleanedQuery = cleanedQuery.replace(semesterRegex, " ");
 
-  // 2. Extract Branches
+  // 2. Extract Branches matching DB slugs (ordered to match more specific/longer terms first)
   const BRANCH_MAPPINGS = [
     {
-      slugs: ["computer-science-and-engineering"],
-      regex: /\b(?:cse|computer\s+science(?:\s+and\s+engineering)?)\b/gi
+      slug: "computer-science-and-business-systems",
+      regex: /\b(?:computer-science-and-business-systems|computer\s+science\s+and\s+business\s+systems|csbs)\b/gi
     },
     {
-      slugs: ["information-technology"],
-      regex: /\b(?:it|information\s+technology)\b/gi
+      slug: "computer-science-and-engineering",
+      regex: /\b(?:computer-science-and-engineering|computer\s+science\s+and\s+engineering|computer\s+engineering|computer\s+science|cse|cs)\b/gi
     },
     {
-      slugs: ["artificial-intelligence-and-machine-learning", "aiml"],
-      regex: /\b(?:aiml|ai\s+ml|ai\/ml|ai\s*&\s*ml|artificial\s+intelligence(?:\s+and\s+machine\s+learning)?|machine\s+learning)\b/gi
+      slug: "information-technology",
+      regex: /\b(?:information-technology|information\s+technology|it)\b/gi
     },
     {
-      slugs: ["computer-science-and-business-systems", "csbs"],
-      regex: /\b(?:csbs|computer\s+science\s+and\s+business\s+systems|business\s+systems)\b/gi
+      slug: "artificial-intelligence-and-machine-learning",
+      regex: /\b(?:artificial-intelligence-and-machine-learning|artificial\s+intelligence\s+and\s+machine\s+learning|artificial\s+intelligence|aiml|ai\s*&\s*ml|ai\s+ml|ai\/ml)\b/gi
     },
     {
-      slugs: ["electronics-and-telecommunication-engineering", "ece"],
-      regex: /\b(?:entc|extc|etc|ece|electronics(?:\s+and\s+telecommunication)?|electronics\s+and\s+telecommunication\s+engineering|telecommunication)\b/gi
+      slug: "electronics-and-communication-engineering",
+      regex: /\b(?:electronics-and-telecommunication-engineering|electronics-and-communication-engineering|electronics\s+and\s+telecommunication\s+engineering|electronics\s+and\s+communication\s+engineering|electronics\s+and\s+telecommunication|electronics\s+and\s+communication|electronics|entc|e\s*&\s*tc|e\s*and\s*tc|ece|extc|etc)\b/gi
     },
     {
-      slugs: ["civil-engineering"],
-      regex: /\b(?:civil(?:\s+engineering)?)\b/gi
+      slug: "mechanical-engineering",
+      regex: /\b(?:mechanical-engineering|mechanical\s+engineering|mechanical|mech)\b/gi
     },
     {
-      slugs: ["mechanical-engineering"],
-      regex: /\b(?:mech|mechanical(?:\s+engineering)?)\b/gi
+      slug: "civil-engineering",
+      regex: /\b(?:civil-engineering|civil\s+engineering|civil)\b/gi
     },
     {
-      slugs: ["chemical-engineering"],
-      regex: /\b(?:chem|chemical(?:\s+engineering)?)\b/gi
+      slug: "chemical-engineering",
+      regex: /\b(?:chemical-engineering|chemical\s+engineering|chemical|chem)\b/gi
     }
   ];
 
   for (const mapping of BRANCH_MAPPINGS) {
     mapping.regex.lastIndex = 0;
     if (mapping.regex.test(cleanedQuery)) {
-      branches.push(...mapping.slugs);
+      branches.push(mapping.slug);
       mapping.regex.lastIndex = 0;
       cleanedQuery = cleanedQuery.replace(mapping.regex, " ");
     }
   }
 
-  // Clean up multiple spaces, trim, and normalize to lowercase
-  cleanedQuery = cleanedQuery.replace(/\s+/g, " ").trim().toLowerCase();
+  // 3. Remove Noise Words/Phrases
+  const noiseRegex = /\b(?:previous\s+year\s+question\s+papers?|previous\s+year\s+papers?|question\s+papers?|bharati\s+vidyapeeth|pyqs?|papers?|bvdu|qp|questions?)\b/gi;
+  cleanedQuery = cleanedQuery.replace(noiseRegex, " ");
+
+  // Clean up multiple spaces, trim
+  cleanedQuery = cleanedQuery.replace(/\s+/g, " ").trim();
 
   return {
     query: cleanedQuery,
@@ -169,10 +215,11 @@ export const getRelated = query({
     currentPaperId: v.id("papers"),
   },
   handler: async (ctx, args) => {
+    const normalizedBranch = normalizeBranchSlug(args.branchSlug);
     const papers = await ctx.db
       .query("papers")
       .withIndex("by_filters", (q) =>
-        q.eq("branchSlug", args.branchSlug).eq("semester", args.semester)
+        q.eq("branchSlug", normalizedBranch).eq("semester", args.semester)
       )
       .order("desc")
       .take(10);
@@ -199,8 +246,8 @@ export const search = query({
 
     const mergedBranches = [
       ...new Set([
-        ...(args.branches ?? []),
-        ...parsedBranches
+        ...(args.branches ?? []).map(normalizeBranchSlug),
+        ...parsedBranches.map(normalizeBranchSlug)
       ])
     ];
 
@@ -276,8 +323,8 @@ export const paginatedSearch = query({
 
     const mergedBranches = [
       ...new Set([
-        ...(args.branches ?? []),
-        ...parsedBranches
+        ...(args.branches ?? []).map(normalizeBranchSlug),
+        ...parsedBranches.map(normalizeBranchSlug)
       ])
     ];
 
@@ -370,7 +417,8 @@ export const autocomplete = query({
   handler: async (ctx, args) => {
     const { query: parsedQueryText, branches: parsedBranches, semesters: parsedSemesters } = parseQuery(args.query);
     const q = parsedQueryText.trim();
-    if (!q && parsedBranches.length === 0 && parsedSemesters.length === 0) return [];
+    const normalizedBranches = parsedBranches.map(normalizeBranchSlug);
+    if (!q && normalizedBranches.length === 0 && parsedSemesters.length === 0) return [];
 
     let papers = [];
     if (q) {
@@ -381,10 +429,10 @@ export const autocomplete = query({
     } else {
       // If query text is empty but we have parsed filters, query by them
       let queryObj;
-      if (parsedBranches.length > 0) {
+      if (normalizedBranches.length > 0) {
         queryObj = ctx.db
           .query("papers")
-          .withIndex("by_filters", (q2) => q2.eq("branchSlug", parsedBranches[0]))
+          .withIndex("by_filters", (q2) => q2.eq("branchSlug", normalizedBranches[0]))
           .order("desc");
       } else if (parsedSemesters.length > 0) {
         queryObj = ctx.db
@@ -399,7 +447,7 @@ export const autocomplete = query({
 
     // Now filter matches in-memory by parsed filters if there was a text query or multiple filters
     papers = papers.filter((paper) => {
-      if (parsedBranches.length > 0 && !parsedBranches.includes(paper.branchSlug)) return false;
+      if (normalizedBranches.length > 0 && !normalizedBranches.includes(paper.branchSlug)) return false;
       if (parsedSemesters.length > 0 && !parsedSemesters.includes(paper.semester)) return false;
       return true;
     });
@@ -464,6 +512,8 @@ export const updatePaper = mutation({
   },
   handler: async (ctx, args) => {
     const { id, ...data } = args;
+    data.branch = normalizeBranchName(data.branch);
+    data.branchSlug = normalizeBranchSlug(data.branchSlug);
     await ctx.db.patch(id, data);
     return id;
   },

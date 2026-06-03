@@ -21,6 +21,9 @@ describe("parseQuery Helper Function", () => {
       { input: "dsa 3rd sem", expectedSem: [3] },
       { input: "1st semester chemistry", expectedSem: [1] },
       { input: "sem 5 math", expectedSem: [5] },
+      { input: "math s8", expectedSem: [8] },
+      { input: "s1 chem", expectedSem: [1] },
+      { input: "sem8 physics", expectedSem: [8] },
     ];
 
     for (const tc of testCases) {
@@ -29,15 +32,25 @@ describe("parseQuery Helper Function", () => {
     }
   });
 
-  it("should extract branch patterns and abbreviations correctly", () => {
+  it("should extract branch patterns and abbreviations correctly mapping to DB slugs", () => {
     const testCases = [
       { input: "cse database", expectedBranches: ["computer-science-and-engineering"] },
+      { input: "cs database", expectedBranches: ["computer-science-and-engineering"] },
+      { input: "computer science database", expectedBranches: ["computer-science-and-engineering"] },
+      { input: "computer engineering database", expectedBranches: ["computer-science-and-engineering"] },
       { input: "information technology network", expectedBranches: ["information-technology"] },
-      { input: "aiml deep learning", expectedBranches: ["artificial-intelligence-and-machine-learning", "aiml"] },
+      { input: "it network", expectedBranches: ["information-technology"] },
+      { input: "aiml deep learning", expectedBranches: ["artificial-intelligence-and-machine-learning"] },
+      { input: "ai ml deep learning", expectedBranches: ["artificial-intelligence-and-machine-learning"] },
+      { input: "ai&ml deep learning", expectedBranches: ["artificial-intelligence-and-machine-learning"] },
+      { input: "artificial intelligence deep learning", expectedBranches: ["artificial-intelligence-and-machine-learning"] },
       { input: "civil surveying", expectedBranches: ["civil-engineering"] },
       { input: "mech thermodynamics", expectedBranches: ["mechanical-engineering"] },
-      { input: "entc signals", expectedBranches: ["electronics-and-telecommunication-engineering", "ece"] },
-      { input: "csbs database", expectedBranches: ["computer-science-and-business-systems", "csbs"] },
+      { input: "entc signals", expectedBranches: ["electronics-and-communication-engineering"] },
+      { input: "e&tc signals", expectedBranches: ["electronics-and-communication-engineering"] },
+      { input: "electronics and telecommunication signals", expectedBranches: ["electronics-and-communication-engineering"] },
+      { input: "csbs database", expectedBranches: ["computer-science-and-business-systems"] },
+      { input: "computer science and business systems database", expectedBranches: ["computer-science-and-business-systems"] },
     ];
 
     for (const tc of testCases) {
@@ -46,11 +59,47 @@ describe("parseQuery Helper Function", () => {
     }
   });
 
-  it("should extract both branch and semester from mixed queries", () => {
-    const result = parseQuery("computer science sem 3 database");
-    expect(result.query).toBe("database");
-    expect(result.branches).toEqual(["computer-science-and-engineering"]);
-    expect(result.semesters).toEqual([3]);
+  it("should remove noise words and phrases", () => {
+    const testCases = [
+      { input: "dbms question paper", expectedQuery: "dbms" },
+      { input: "dbms pyq", expectedQuery: "dbms" },
+      { input: "dbms paper", expectedQuery: "dbms" },
+      { input: "dbms qp", expectedQuery: "dbms" },
+      { input: "dbms previous year paper", expectedQuery: "dbms" },
+      { input: "dbms questions", expectedQuery: "dbms" },
+      { input: "dbms question", expectedQuery: "dbms" },
+      { input: "bvdu database", expectedQuery: "database" },
+      { input: "bharati vidyapeeth database", expectedQuery: "database" },
+    ];
+
+    for (const tc of testCases) {
+      const result = parseQuery(tc.input);
+      expect(result.query).toBe(tc.expectedQuery);
+    }
+  });
+
+  it("should extract both branch and semester from mixed queries and handle noise words", () => {
+    const testCases = [
+      {
+        input: "cse sem 5 dbms pyq",
+        expectedQuery: "dbms",
+        expectedBranches: ["computer-science-and-engineering"],
+        expectedSem: [5],
+      },
+      {
+        input: "it sem 3 agile methodologies question paper",
+        expectedQuery: "agile methodologies",
+        expectedBranches: ["information-technology"],
+        expectedSem: [3],
+      },
+    ];
+
+    for (const tc of testCases) {
+      const result = parseQuery(tc.input);
+      expect(result.query).toBe(tc.expectedQuery);
+      expect(result.branches).toEqual(tc.expectedBranches);
+      expect(result.semesters).toEqual(tc.expectedSem);
+    }
   });
 
   it("should handle empty or whitespace-only queries", () => {
