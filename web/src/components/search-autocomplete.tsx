@@ -58,6 +58,18 @@ export function SearchAutocomplete({
 
   // Keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (isOpen && activeIndex >= 0 && activeIndex < suggestions.length) {
+        handleSelect(suggestions[activeIndex].subject);
+      } else {
+        // If no suggestion selected or suggestions closed, submit the raw value
+        onSelect(value);
+        setIsFocused(false);
+      }
+      return;
+    }
+
     if (!isOpen) return;
 
     if (e.key === "ArrowDown") {
@@ -66,15 +78,6 @@ export function SearchAutocomplete({
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
       setActiveIndex((prev) => (prev > 0 ? prev - 1 : prev));
-    } else if (e.key === "Enter") {
-      e.preventDefault();
-      if (activeIndex >= 0 && activeIndex < suggestions.length) {
-        handleSelect(suggestions[activeIndex].subject);
-      } else {
-        // If no suggestion selected, submit the raw value
-        onSelect(value);
-        setIsFocused(false);
-      }
     } else if (e.key === "Escape") {
       e.preventDefault();
       setIsFocused(false);

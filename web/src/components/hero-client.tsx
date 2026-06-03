@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { SearchAutocomplete } from "@/components/search-autocomplete";
+import { SearchFilters, FilterKey } from "@/components/search-filters";
+import { slugify } from "@/lib/utils";
 
 export function HeroClient() {
   const router = useRouter();
@@ -30,21 +32,49 @@ export function HeroClient() {
     }
   };
 
+  const handleToggleFilter = (key: FilterKey, val: string) => {
+    const params = new URLSearchParams();
+    if (query.trim()) {
+      params.set("q", query.trim());
+    }
+    params.set(key, key === "branch" ? slugify(val) : val);
+    router.push(`/browse?${params.toString()}`);
+  };
+
+  const emptyFilters = {
+    branch: [],
+    semester: [],
+    session: [],
+    year: [],
+  };
+
   return (
-    <form onSubmit={handleSearchSubmit} className="mt-6 md:mt-8 relative w-full">
-      <SearchAutocomplete
-        value={query}
-        onChange={setQuery}
-        onSelect={(val) => {
-          if (val.trim()) {
-            router.push(`/browse?q=${encodeURIComponent(val.trim())}`);
-          } else {
-            router.push("/browse");
-          }
-        }}
-        showShortcut={true}
-        inputRef={inputRef}
+    <div className="mt-6 md:mt-8 relative w-full flex flex-col gap-4">
+      <form onSubmit={handleSearchSubmit} className="relative w-full">
+        <SearchAutocomplete
+          value={query}
+          onChange={setQuery}
+          onSelect={(val) => {
+            if (val.trim()) {
+              router.push(`/browse?q=${encodeURIComponent(val.trim())}`);
+            } else {
+              router.push("/browse");
+            }
+          }}
+          showShortcut={true}
+          inputRef={inputRef}
+        />
+      </form>
+      
+      {/* Reusable Search Filters dropdowns */}
+      <SearchFilters
+        selectedFilters={emptyFilters}
+        onToggleFilter={handleToggleFilter}
+        onRemoveChip={() => {}}
+        onClearFilters={() => {}}
+        hasActiveFilters={false}
+        className="self-center"
       />
-    </form>
+    </div>
   );
 }
