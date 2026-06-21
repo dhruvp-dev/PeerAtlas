@@ -1,7 +1,12 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
+import { useAnalytics } from "@/lib/analytics";
 
 export default function Footer() {
+  const { track } = useAnalytics();
+
   return (
     <footer className="mt-auto w-full border-t border-border bg-white py-6 md:py-8">
       <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-4 px-5 md:flex-row md:px-10">
@@ -21,7 +26,7 @@ export default function Footer() {
 
         {/* Right Side */}
         <div className="flex flex-col items-center md:items-end gap-1.5 mt-4 md:mt-0 text-[13px] font-medium text-navy-mid/60">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap justify-center">
             <Link href="/about" className="transition-colors hover:text-navy-deep">
               About
             </Link>
@@ -30,16 +35,37 @@ export default function Footer() {
               Browse Papers
             </Link>
             <span className="text-navy-mid/30 select-none">&bull;</span>
-            <a href="https://github.com/dhruvp-dev/PeerAtlas" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-navy-deep">
+            <a
+              href="https://github.com/dhruvp-dev/PeerAtlas"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => track("external_link_clicked", { destination: "github" })}
+              className="transition-colors hover:text-navy-deep"
+            >
               GitHub
             </a>
             <span className="text-navy-mid/30 select-none">&bull;</span>
-            <a href="https://github.com/dhruvp-dev/PeerAtlas/issues" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-navy-deep">
+            <a
+              href="https://github.com/dhruvp-dev/PeerAtlas/issues"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => track("external_link_clicked", { destination: "github" })}
+              className="transition-colors hover:text-navy-deep"
+            >
               Report Issue
             </a>
           </div>
           <span className="text-[12px] text-navy-mid/50 select-none">
-            &copy; {new Date().getFullYear()} <a href="https://www.dhruvp.tech?utm_source=peeratlas&utm_medium=footer" target="_blank" rel="noopener noreferrer" className="hover:underline transition-colors hover:text-navy-deep">Dhruv</a>
+            &copy; {new Date().getFullYear()}{" "}
+            <a
+              href="https://www.dhruvp.tech?utm_source=peeratlas&utm_medium=footer"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => track("external_link_clicked", { destination: "portfolio" })}
+              className="hover:underline transition-colors hover:text-navy-deep font-semibold"
+            >
+              Dhruv
+            </a>
           </span>
         </div>
       </div>

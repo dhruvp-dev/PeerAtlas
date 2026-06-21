@@ -188,13 +188,33 @@ export function parseQuery(rawQuery: string) {
   };
 }
 
+// Client-facing query to parse search queries
+export const parseQueryText = query({
+  args: { query: v.string() },
+  handler: async (ctx, args) => {
+    return parseQuery(args.query);
+  },
+});
 
-// Retrieve a single paper by ID
+// Retrieve a single paper by ID (attaching storage file metadata size)
 export const get = query({
   args: { id: v.id("papers") },
   handler: async (ctx, args) => {
     const paper = await ctx.db.get(args.id);
-    return paper ? omitSearchableText(paper) : null;
+    if (!paper) return null;
+    let fileSize = 0;
+    try {
+      const meta = await ctx.storage.getMetadata(paper.fileId);
+      if (meta) {
+        fileSize = meta.size;
+      }
+    } catch (e) {
+      console.error("Failed to read storage metadata for size:", e);
+    }
+    return {
+      ...omitSearchableText(paper),
+      fileSize,
+    };
   },
 });
 

@@ -3,12 +3,11 @@
 import { useEffect, useRef, useState, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { ChevronDown, X, Filter } from "lucide-react";
-import { useMutation, usePaginatedQuery } from "convex/react";
+import { useMutation, usePaginatedQuery, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { SearchAutocomplete } from "@/components/search-autocomplete";
 import { slugify } from "@/lib/utils";
-import { Analytics } from "@/lib/analytics";
-import { usePostHogAnalytics } from "@/lib/posthog";
+import { Analytics, useAnalytics } from "@/lib/analytics";
 
 type FilterKey = "branch" | "semester" | "session" | "year";
 
@@ -79,7 +78,7 @@ export function BrowseContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const initialQuery = searchParams.get("q") || "";
-  const { trackEvent } = usePostHogAnalytics();
+  const { track } = useAnalytics();
   const lastLoggedRef = useRef<{ query: string; branch: string[]; semester: string[] } | null>(null);
 
   // State for search query and active filters
@@ -127,6 +126,7 @@ export function BrowseContent() {
   const isLoading = status === "LoadingFirstPage";
 
   const logSearch = useMutation(api.papers.logSearch);
+  const parsed = useQuery(api.papers.parseQueryText, { query: query.trim() });
 
   // Debounced search logs analytics
   useEffect(() => {
@@ -148,16 +148,20 @@ export function BrowseContent() {
       logSearch({ query: trimmed });
       Analytics.searchPerformed(trimmed, papers.length);
 
-      const props = {
-        search_query: trimmed,
-        branch: currentBranch.length > 0 ? currentBranch : undefined,
-        semester: currentSemester.length > 0 ? currentSemester : undefined,
-      };
+      const branchDetected = parsed?.branches && parsed.branches.length > 0 ? parsed.branches[0] : "";
+      const subjectDetected = parsed?.query || "";
 
       if (papers.length > 0) {
-        trackEvent("search_performed", props);
+        track("search_performed", {
+          query: trimmed,
+          resultCount: papers.length,
+          branchDetected,
+          subjectDetected,
+        });
       } else {
-        trackEvent("search_no_results", props);
+        track("search_no_results", {
+          query: trimmed,
+        });
       }
 
       lastLoggedRef.current = {
@@ -168,7 +172,7 @@ export function BrowseContent() {
     }, 1500);
 
     return () => clearTimeout(delayDebounce);
-  }, [query, isLoading, papers.length, selectedFilters.branch, selectedFilters.semester, logSearch, trackEvent]);
+  }, [query, isLoading, papers.length, selectedFilters.branch, selectedFilters.semester, logSearch, track, parsed]);
 
   // Multi-select toggle handler
   const toggleFilterOption = (key: FilterKey, val: string) => {

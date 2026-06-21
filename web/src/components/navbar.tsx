@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Search, Menu, X, BookOpen, LayoutDashboard, Info } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
+import { useAnalytics } from "@/lib/analytics";
 
 const GithubIcon = ({ className }: { className?: string }) => (
   <svg
@@ -21,6 +22,7 @@ const GithubIcon = ({ className }: { className?: string }) => (
 export default function Navbar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const { track } = useAnalytics();
 
   const navLinks = [
     { name: "Browse", href: "/browse", icon: BookOpen },
@@ -62,6 +64,7 @@ export default function Navbar() {
               href="https://github.com/dhruvp-dev/PeerAtlas"
               target="_blank"
               rel="noopener noreferrer"
+              onClick={() => track("external_link_clicked", { destination: "github" })}
               className="flex h-9 w-9 items-center justify-center rounded-btn border border-border bg-card hover:bg-muted transition-colors text-foreground dark:bg-background dark:border-border dark:hover:bg-muted dark:text-foreground"
               aria-label="GitHub Repository"
             >
@@ -77,6 +80,7 @@ export default function Navbar() {
             href="https://github.com/dhruvp-dev/PeerAtlas"
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => track("external_link_clicked", { destination: "github" })}
             className="flex h-9 w-9 items-center justify-center rounded-btn border border-border bg-white hover:bg-mist transition-colors text-navy-deep"
             aria-label="GitHub Repository"
           >

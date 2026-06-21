@@ -3,30 +3,51 @@ import { usePostHog } from "posthog-js/react";
 
 export interface PostHogEvents {
   paper_viewed: {
-    paper_id: string;
-    paper_name: string;
-    subject: string;
-    semester: number;
-    year: number;
+    paperId: string;
+    paperTitle: string;
     branch: string;
+    semester: number;
+    subject: string;
+    examYear: number;
+    examType: string;
   };
   paper_downloaded: {
-    paper_id: string;
-    paper_name: string;
-    subject: string;
-    semester: number;
-    year: number;
+    paperId: string;
+    paperTitle: string;
     branch: string;
+    semester: number;
+    subject: string;
+    examYear: number;
+    fileSize: number;
   };
   search_performed: {
-    search_query: string;
-    branch?: string[];
-    semester?: string[];
+    query: string;
+    resultCount: number;
+    branchDetected: string;
+    subjectDetected: string;
   };
   search_no_results: {
-    search_query: string;
-    branch?: string[];
-    semester?: string[];
+    query: string;
+  };
+  related_paper_clicked: {
+    sourcePaperId: string;
+    destinationPaperId: string;
+    sourceSubject: string;
+    destinationSubject: string;
+  };
+  paper_shared: {
+    paperId: string;
+    subject: string;
+    branch: string;
+    shareMethod: string;
+  };
+  external_link_clicked: {
+    destination: "github" | "portfolio" | "feedback_form";
+  };
+  feedback_submitted: {
+    category: string;
+    rating: number;
+    comment?: string;
   };
 }
 

@@ -5,8 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, Download, Link2, Calendar, FileText, LayoutGrid, CheckCircle } from "lucide-react";
 import { useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
-import { Analytics } from "@/lib/analytics";
-import { usePostHogAnalytics } from "@/lib/posthog";
+import { useAnalytics } from "@/lib/analytics";
 
 interface PaperClientProps {
   paper: any;
@@ -15,7 +14,7 @@ interface PaperClientProps {
 
 export default function PaperClient({ paper, relatedPapers }: PaperClientProps) {
   const logPaperView = useMutation(api.papers.logPaperView);
-  const { trackEvent } = usePostHogAnalytics();
+  const { track } = useAnalytics();
   const hasTracked = useRef(false);
 
   // States
@@ -26,18 +25,18 @@ export default function PaperClient({ paper, relatedPapers }: PaperClientProps) 
     if (paper && !hasTracked.current) {
       hasTracked.current = true;
       logPaperView({ paperId: paper._id as string });
-      Analytics.paperView(paper.subject, paper.semester, paper._id as string);
       
-      trackEvent("paper_viewed", {
-        paper_id: paper._id as string,
-        paper_name: `${paper.subject} - ${paper.session ?? ""} ${paper.year}`,
-        subject: paper.subject,
-        semester: paper.semester,
-        year: paper.year,
+      track("paper_viewed", {
+        paperId: paper._id as string,
+        paperTitle: `${paper.subject} - ${paper.session ?? ""} ${paper.year}`,
         branch: paper.branch,
+        semester: paper.semester,
+        subject: paper.subject,
+        examYear: paper.year,
+        examType: paper.session ?? "Unknown",
       });
     }
-  }, [paper, logPaperView, trackEvent]);
+  }, [paper, logPaperView, track]);
 
   // Copy shareable page link to clipboard
   const handleCopyLink = () => {
@@ -45,7 +44,12 @@ export default function PaperClient({ paper, relatedPapers }: PaperClientProps) 
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
     if (paper) {
-      Analytics.paperShared(paper._id as string, paper.subject, "copy_link");
+      track("paper_shared", {
+        paperId: paper._id as string,
+        subject: paper.subject,
+        branch: paper.branch,
+        shareMethod: "copy_link",
+      });
     }
   };
 
@@ -105,14 +109,14 @@ export default function PaperClient({ paper, relatedPapers }: PaperClientProps) 
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => {
-                  Analytics.paperDownload(paper._id as string, paper.subject);
-                  trackEvent("paper_downloaded", {
-                    paper_id: paper._id as string,
-                    paper_name: `${paper.subject} - ${paper.session ?? ""} ${paper.year}`,
-                    subject: paper.subject,
-                    semester: paper.semester,
-                    year: paper.year,
+                  track("paper_downloaded", {
+                    paperId: paper._id as string,
+                    paperTitle: `${paper.subject} - ${paper.session ?? ""} ${paper.year}`,
                     branch: paper.branch,
+                    semester: paper.semester,
+                    subject: paper.subject,
+                    examYear: paper.year,
+                    fileSize: paper.fileSize || 0,
                   });
                 }}
                 className="flex h-9 items-center gap-1.5 rounded-btn bg-sky-blue px-3.5 text-xs font-semibold text-white transition-hover hover:bg-navy-deep shadow-sm"
@@ -211,6 +215,14 @@ export default function PaperClient({ paper, relatedPapers }: PaperClientProps) 
                   <Link
                     key={related._id}
                     href={`/paper/${related._id}`}
+                    onClick={() => {
+                      track("related_paper_clicked", {
+                        sourcePaperId: paper._id as string,
+                        destinationPaperId: related._id as string,
+                        sourceSubject: paper.subject,
+                        destinationSubject: related.subject,
+                      });
+                    }}
                     className="group flex flex-col gap-1 rounded-lg border border-border/60 bg-white p-2.5 hover:border-sky-blue transition-hover cursor-pointer"
                   >
                     <span className="text-[10px] font-bold uppercase tracking-wider text-[#b45309] dark:text-[#d97706]">

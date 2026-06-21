@@ -36,4 +36,24 @@ export default defineSchema({
     paperId: v.string(),
     timestamp: v.number(),
   }).index("by_timestamp", ["timestamp"]),
+
+  analyticsEvents: defineTable({
+    name: v.string(),
+    properties: v.any(),
+    anonymousId: v.string(),
+    sessionId: v.string(),
+    timestamp: v.number(),
+  })
+    .index("by_name", ["name"])
+    .index("by_timestamp", ["timestamp"])
+    .index("by_name_timestamp", ["name", "timestamp"]),
+
+  feedback: defineTable({
+    category: v.string(),
+    rating: v.number(),
+    comment: v.optional(v.string()),
+    anonymousId: v.string(),
+    sessionId: v.string(),
+    timestamp: v.number(),
+  }).index("by_timestamp", ["timestamp"]),
 });
