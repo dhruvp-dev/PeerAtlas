@@ -19,6 +19,8 @@ const GithubIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
+import { TimetableBanner } from "./timetable-banner";
+
 export default function Navbar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
@@ -31,6 +33,7 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-white/85 backdrop-blur-md transition-all duration-200">
+      <TimetableBanner />
       <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-5 md:px-10">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 group">

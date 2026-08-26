@@ -4,7 +4,6 @@ import { fetchQuery } from "convex/nextjs";
 import { api } from "../../convex/_generated/api";
 import { MOCK_PAPERS } from "@/lib/mock-data";
 import { HeroClient } from "@/components/hero-client";
-import { TimetableBanner } from "@/components/timetable-banner";
 
 export const dynamic = "force-dynamic";
 
@@ -33,9 +32,6 @@ export default async function Page() {
 
       {/* Spotlight Search Bar */}
       <HeroClient />
-
-      {/* Timetable Announcement Banner */}
-      <TimetableBanner />
 
       {/* Popular Papers preview list */}
       <div className="mt-10 md:mt-12">
