@@ -5,10 +5,6 @@ import { ArrowLeft, Download, Calendar } from "lucide-react";
 import { TIMETABLE_PDF_PATH } from "@/lib/timetable-config";
 
 export default function TimetableClient() {
-  const downloadUrl = TIMETABLE_PDF_PATH.startsWith("http")
-    ? `/api/download?url=${encodeURIComponent(TIMETABLE_PDF_PATH)}&filename=College_of_Engineering_Theory_Timetable_Winter_2026.pdf`
-    : TIMETABLE_PDF_PATH;
-
   return (
     <div className="mx-auto w-full max-w-5xl px-5 py-6 md:py-10 animate-fade-up">
       {/* Navigation Breadcrumb & Back action */}
@@ -44,10 +40,8 @@ export default function TimetableClient() {
         {/* Main Action Triggers */}
         <div className="flex items-center gap-2 shrink-0">
           <a
-            href={downloadUrl}
+            href={TIMETABLE_PDF_PATH}
             download="College_of_Engineering_Theory_Timetable_Winter_2026.pdf"
-            target="_blank"
-            rel="noopener noreferrer"
             className="flex h-9 items-center gap-1.5 rounded-btn bg-sky-blue px-3.5 text-xs font-semibold text-white transition-hover hover:bg-navy-deep dark:hover:bg-sky-blue/80 shadow-sm"
           >
             <Download className="h-3.5 w-3.5" />
