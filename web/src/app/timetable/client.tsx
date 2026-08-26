@@ -5,6 +5,10 @@ import { ArrowLeft, Download, Calendar } from "lucide-react";
 import { TIMETABLE_PDF_PATH } from "@/lib/timetable-config";
 
 export default function TimetableClient() {
+  const downloadUrl = TIMETABLE_PDF_PATH.startsWith("http")
+    ? `/api/download?url=${encodeURIComponent(TIMETABLE_PDF_PATH)}&filename=College_of_Engineering_Theory_Timetable_Winter_2026.pdf`
+    : TIMETABLE_PDF_PATH;
+
   return (
     <div className="mx-auto w-full max-w-5xl px-5 py-6 md:py-10 animate-fade-up">
       {/* Navigation Breadcrumb & Back action */}
@@ -40,8 +44,10 @@ export default function TimetableClient() {
         {/* Main Action Triggers */}
         <div className="flex items-center gap-2 shrink-0">
           <a
-            href={TIMETABLE_PDF_PATH}
-            download="College_of_Engineering_Pune_Navi_Mumbai_Campus_Theory_Timetable_Winter_2026.pdf"
+            href={downloadUrl}
+            download="College_of_Engineering_Theory_Timetable_Winter_2026.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
             className="flex h-9 items-center gap-1.5 rounded-btn bg-sky-blue px-3.5 text-xs font-semibold text-white transition-hover hover:bg-navy-deep dark:hover:bg-sky-blue/80 shadow-sm"
           >
             <Download className="h-3.5 w-3.5" />
@@ -53,7 +59,7 @@ export default function TimetableClient() {
       {/* Main PDF Viewer Card */}
       <div className="mt-6 rounded-card border border-border bg-white dark:bg-card p-2 shadow-sm overflow-hidden h-[720px] md:h-[800px]">
         <iframe
-          src={`${encodeURI(TIMETABLE_PDF_PATH)}#toolbar=1&navpanes=0&statusbar=0`}
+          src={`${TIMETABLE_PDF_PATH}#toolbar=1&navpanes=0&statusbar=0`}
           className="w-full h-full rounded border-0 bg-mist/30 dark:bg-background"
           title="College of Engineering Theory Timetable Winter 2026 PDF"
         />
