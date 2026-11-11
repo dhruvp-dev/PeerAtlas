@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🗺️ PeerAtlas
+# PeerAtlas
 
 **Find the right paper in under 5 seconds.**
 
@@ -21,27 +21,27 @@ A search-first archive of engineering previous year question papers (PYQs).
 [![Stars](https://img.shields.io/github/stars/dhruvp-dev/PeerAtlas?style=flat)](https://github.com/dhruvp-dev/PeerAtlas/stargazers)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen)](https://github.com/dhruvp-dev/PeerAtlas/pulls)
 
-[Features](#-features) · [Tech Stack](#-tech-stack) · [Structure](#-repository-structure) · [Getting Started](#-getting-started) · [Docs](#-documentation) · [Contributing](#-contributing) · [License](#-license)
+[Features](#features) · [Tech Stack](#tech-stack) · [Structure](#repository-structure) · [Getting Started](#getting-started) · [Docs](#documentation) · [Contributing](#contributing) · [License](#license)
 
 </div>
 
 ---
 
-## 📖 About
+## About
 
 PeerAtlas helps students quickly find, filter, and access question papers without navigating complex folder structures or poorly organized Google Drives.
 
-## ✨ Features
+## Features
 
-| | Feature | Description |
-|---|---|---|
-| 🔎 | **Blazing Fast Search** | Search by subject name, branch, semester, session, or year. |
-| 🎛️ | **Streamlined Filtering** | Drill down into papers by branch and semester. |
-| 📄 | **Instant Preview & Download** | View PDFs in the browser with one click. |
-| 📱 | **Mobile First** | Fully responsive on phones and tablets. |
-| 🛠️ | **Admin Management** | Dedicated portal for uploading papers and managing the archive. |
+| Feature | Description |
+|---|---|
+| **Blazing Fast Search** | Search by subject name, branch, semester, session, or year. |
+| **Streamlined Filtering** | Drill down into papers by branch and semester. |
+| **Instant Preview & Download** | View PDFs in the browser with one click. |
+| **Mobile First** | Fully responsive on phones and tablets. |
+| **Admin Management** | Dedicated portal for uploading papers and managing the archive. |
 
-## 🧰 Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |---|---|
@@ -52,7 +52,7 @@ PeerAtlas helps students quickly find, filter, and access question papers withou
 | Ingestion | Python OCR pipeline |
 | Testing | Vitest |
 
-## 🏗️ Repository Structure
+## Repository Structure
 
 ```text
 PeerAtlas/
@@ -62,7 +62,7 @@ PeerAtlas/
 └── assets/
 ```
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Web Application (Next.js)
 The frontend is built with Next.js App Router, Tailwind CSS, and Convex for the backend database.
@@ -83,7 +83,7 @@ pip install -r requirements.txt
 ```
 *See the [OCR README](./ocr/README.md) for more details on the ingestion pipeline.*
 
-## 📚 Documentation
+## Documentation
 
 - [Product Requirements](./docs/prd.md)
 - [Product Overview](./docs/product.md)
@@ -91,10 +91,10 @@ pip install -r requirements.txt
 - [Data Model](./docs/data_model.md)
 - [How we OCR'd 1500 papers](./docs/how_we_ocred_1500_papers.md)
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Fork the repo, create a branch, and open a pull request. Run `npm test` and `npm run lint` in `web/` before submitting.
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
