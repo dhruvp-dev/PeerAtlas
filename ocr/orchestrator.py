@@ -168,6 +168,7 @@ class PipelineOrchestrator:
         page_range = f"pages {group['start_page']}–{group['end_page']}"
         try:
             # Stage 4: Extract metadata
+            group["source_pdf"] = source_pdf.name
             metadata = self.metadata_extractor.extract(group)
             metadata["sourcePdf"] = source_pdf.name
             result.paper_records.append(metadata)

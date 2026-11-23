@@ -17,6 +17,7 @@ Each record is a flat, searchable Convex document with:
 from __future__ import annotations
 
 import json
+import threading
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -24,6 +25,8 @@ from typing import Any
 from utils.logger import get_logger
 
 logger = get_logger("convex_exporter")
+
+_CUMULATIVE_LOCK = threading.Lock()
 
 # Fields to EXCLUDE from the Convex export (too large / internal only)
 _EXCLUDE_FIELDS = {"searchableText", "ocrPreview"}  # kept in separate searchable index
@@ -87,11 +90,12 @@ class ConvexExporter:
         logger.info(f"[CONVEX] Wrote {len(records)} record(s) → {source_file.name}")
 
         # Cumulative file (append)
-        cumulative_file = convex_dir / "papers.json"
-        existing = self._read_json(cumulative_file)
-        merged = existing + records
-        self._write_json(cumulative_file, merged)
-        logger.info(f"[CONVEX] Cumulative total: {len(merged)} record(s)")
+        with _CUMULATIVE_LOCK:
+            cumulative_file = convex_dir / "papers.json"
+            existing = self._read_json(cumulative_file)
+            merged = existing + records
+            self._write_json(cumulative_file, merged)
+            logger.info(f"[CONVEX] Cumulative total: {len(merged)} record(s)")
 
         # Also write searchable full-text separately
         self._export_full_text(all_metadata, convex_dir, source_stem)

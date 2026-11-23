@@ -41,7 +41,7 @@ export default function Page() {
   const [editBranch, setEditBranch] = useState("");
   const [editSemester, setEditSemester] = useState(1);
   const [editSession, setEditSession] = useState<"Winter" | "Summer" | "None">("None");
-  const [editYear, setEditYear] = useState(2025);
+  const [editYear, setEditYear] = useState(2026);
   const [saving, setSaving] = useState(false);
 
   // Map display branch to slug helper

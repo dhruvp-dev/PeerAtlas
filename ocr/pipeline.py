@@ -10,6 +10,10 @@ Usage:
 
 from __future__ import annotations
 
+import os
+os.environ["OMP_THREAD_LIMIT"] = "1"
+os.environ["OMP_NUM_THREADS"] = "1"
+
 import argparse
 import sys
 import time
@@ -126,19 +130,26 @@ def main() -> None:
     all_results = []
 
     if len(pdfs) == 1 or args.workers == 1:
-        for pdf_path in pdfs:
+        for idx, pdf_path in enumerate(pdfs, 1):
             result = orchestrator.process_pdf(pdf_path)
             all_results.append(result)
+            if idx % 25 == 0 or idx == len(pdfs):
+                logger.info(f"[PROGRESS] {idx}/{len(pdfs)} PDFs processed ({(idx/len(pdfs))*100:.1f}%)")
     else:
+        completed = 0
+        total_pdfs = len(pdfs)
         with ThreadPoolExecutor(max_workers=args.workers) as executor:
             futures = {executor.submit(orchestrator.process_pdf, p): p for p in pdfs}
             for future in as_completed(futures):
                 pdf_path = futures[future]
+                completed += 1
                 try:
                     result = future.result()
                     all_results.append(result)
                 except Exception as exc:
                     logger.error(f"Unhandled exception for {pdf_path}: {exc}")
+                if completed % 25 == 0 or completed == total_pdfs:
+                    logger.info(f"[PROGRESS] {completed}/{total_pdfs} PDFs processed ({(completed/total_pdfs)*100:.1f}%)")
 
     # Generate final processing report
     reporter = ReportGenerator(args.output)

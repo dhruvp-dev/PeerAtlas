@@ -86,6 +86,12 @@ BRANCH_ALIASES: dict[str, list[str]] = {
         "civil engg",
         "ce",
     ],
+    "Electrical and Computer Engineering": [
+        "electrical and computer engineering",
+        "electrical & computer engineering",
+        "electrical & computer",
+        "electrical and computer",
+    ],
     "Electrical Engineering": [
         "electrical engineering",
         "electrical engg",
@@ -157,10 +163,16 @@ class BranchExtractor:
     # ------------------------------------------------------------------
 
     def _regex_scan(self, text: str) -> str | None:
+        best_match = None
+        best_len = 0
         for pattern, canonical in _BRANCH_PATTERNS:
-            if pattern.search(text):
-                return canonical
-        return None
+            m = pattern.search(text)
+            if m:
+                match_len = len(m.group(0))
+                if match_len > best_len:
+                    best_len = match_len
+                    best_match = canonical
+        return best_match
 
     def _fuzzy_match(self, text: str) -> tuple[str, float] | None:
         """

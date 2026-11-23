@@ -39,18 +39,21 @@ _ROMAN_PATTERN_STR = "|".join(
 
 # e.g. "Sem - V", "Semester VI", "SEM 4", "Sem-III"
 _SEM_PATTERN = re.compile(
-    rf"SEM(?:ESTER)?\s*[-–\s]?\s*({_ROMAN_PATTERN_STR}|\d{{1,2}})\b",
+    rf"SEM(?:ESTER)?\s*[-–\s:]?\s*({_ROMAN_PATTERN_STR}|\d{{1,2}}|\[V|\|V|1V|!V|IL|Il|IF|If)\b",
     re.IGNORECASE,
 )
 
 # "B.Tech. Sem V" or "B. Tech Semester 5"
 _BTECH_SEM_PATTERN = re.compile(
-    rf"B\.?\s*TECH\.?\s+SEM(?:ESTER)?\s*[-–\s]?\s*({_ROMAN_PATTERN_STR}|\d{{1,2}})\b",
+    rf"B\.?\s*TECH\.?\s+SEM(?:ESTER)?\s*[-–\s:]?\s*({_ROMAN_PATTERN_STR}|\d{{1,2}}|\[V|\|V|1V|!V|IL|Il|IF|If)\b",
     re.IGNORECASE,
 )
 
-# Filename: "SEM_5", "SEM5", "_S5_"
-_FILENAME_SEM = re.compile(r"SEM[-_]?(\d{1,2})", re.IGNORECASE)
+# Filename: "SEM_5", "SEM5", "_S5_", "ITC-IV", "ITC-VI"
+_FILENAME_SEM = re.compile(
+    rf"(?:SEM[-_]?|ITC[-_]?)({_ROMAN_PATTERN_STR}|\d{{1,2}})",
+    re.IGNORECASE,
+)
 
 
 class SemesterExtractor:
@@ -98,8 +101,18 @@ class SemesterExtractor:
 
     @staticmethod
     def _normalise(token: str) -> int | None:
-        if token in ROMAN_TO_INT:
-            return ROMAN_TO_INT[token]
+        t = token.upper()
+        # Common OCR substitutions for Roman numerals
+        t = t.replace("[", "I").replace("]", "I").replace("|", "I").replace("!", "I")
+        if t in ("IL", "1L", "11", "IF", "1F"):
+            t = "II"
+        elif t in ("1V", "LV"):
+            t = "IV"
+        elif t in ("1", "L"):
+            t = "I"
+
+        if t in ROMAN_TO_INT:
+            return ROMAN_TO_INT[t]
         try:
             val = int(token)
             if 1 <= val <= 10:
@@ -111,8 +124,5 @@ class SemesterExtractor:
     def _filename_parse(self, source_path: str) -> int | None:
         match = _FILENAME_SEM.search(source_path)
         if match:
-            try:
-                return int(match.group(1))
-            except ValueError:
-                pass
+            return self._normalise(match.group(1).strip())
         return None

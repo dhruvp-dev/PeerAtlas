@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import json
 import shutil
+import threading
 import traceback
 from pathlib import Path
 from typing import Any
@@ -26,20 +27,23 @@ from utils.logger import get_logger
 
 logger = get_logger("review_router")
 
+_APPEND_LOCK = threading.Lock()
+
 
 def _append_json(path: Path, record: dict) -> None:
     """Append a record to a JSON array file (creates if missing)."""
-    existing: list = []
-    if path.exists():
-        try:
-            existing = json.loads(path.read_text(encoding="utf-8"))
-        except json.JSONDecodeError:
-            existing = []
-    existing.append(record)
-    path.write_text(
-        json.dumps(existing, indent=2, ensure_ascii=False, default=str),
-        encoding="utf-8",
-    )
+    with _APPEND_LOCK:
+        existing: list = []
+        if path.exists():
+            try:
+                existing = json.loads(path.read_text(encoding="utf-8"))
+            except json.JSONDecodeError:
+                existing = []
+        existing.append(record)
+        path.write_text(
+            json.dumps(existing, indent=2, ensure_ascii=False, default=str),
+            encoding="utf-8",
+        )
 
 
 class ReviewRouter:

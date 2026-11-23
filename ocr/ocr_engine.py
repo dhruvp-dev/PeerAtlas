@@ -120,7 +120,11 @@ class OCREngine:
             if TESSERACT_AVAILABLE:
                 # Preprocess: convert to greyscale for better OCR accuracy
                 grey = image.convert("L")
-                raw_text = pytesseract.image_to_string(grey, lang=self.lang)
+                raw_text = pytesseract.image_to_string(
+                    grey,
+                    lang=self.lang,
+                    config=f"--dpi {self.dpi}",
+                )
             else:
                 # Test/stub mode — no real OCR
                 raw_text = f"[STUB PAGE {page_number}]"

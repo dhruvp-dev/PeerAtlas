@@ -11,6 +11,7 @@ import { ClarityAnalytics } from "@/components/clarity-analytics";
 import { getWebsiteSchema } from "@/lib/structured-data";
 import { PHProvider, SuspendedPostHogPageView } from "@/components/posthog-provider";
 import FeedbackWidget from "@/components/feedback-widget";
+import { NewPapersModal } from "@/components/new-papers-modal";
 import "./globals.css";
 
 const inter = Inter({
@@ -106,6 +107,7 @@ export default async function RootLayout({
               </main>
               <Footer />
               <FeedbackWidget />
+              <NewPapersModal />
               <Analytics />
               <SpeedInsights />
               <ClarityAnalytics />

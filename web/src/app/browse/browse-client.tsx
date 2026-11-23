@@ -19,13 +19,16 @@ const FILTER_OPTIONS = {
     "Computer Science and Engineering",
     "Information Technology",
     "Electronics and Telecommunication Engineering",
+    "Electronics and Communication Engineering",
+    "Electrical Engineering",
+    "Electrical and Computer Engineering",
     "Civil Engineering",
     "Mechanical Engineering",
     "Chemical Engineering",
   ],
   semester: ["1", "2", "3", "4", "5", "6", "7", "8"],
   session: ["Winter", "Summer"],
-  year: ["2025", "2024", "2023", "2022", "2021", "2020", "2019", "2018"],
+  year: ["2026", "2025", "2024", "2023", "2022", "2021", "2020", "2019", "2018"],
 } as const;
 
 // Skeleton Loader for SearchParams Prerendering
@@ -97,11 +100,35 @@ export function BrowseContent() {
   // Derive active filters state
   const hasActiveFilters = Boolean(query) || Object.values(selectedFilters).some((f) => f.length > 0);
 
-  // Sync initial query from URL search parameters
+  // Sync initial query and URL filter parameters
   useEffect(() => {
     const q = searchParams.get("q") || "";
     setQuery(q);
     setInputValue(q);
+
+    const yearParam = searchParams.get("year");
+    const branchParam = searchParams.get("branch");
+    const semesterParam = searchParams.get("semester");
+    const sessionParam = searchParams.get("session");
+
+    if (yearParam || branchParam || semesterParam || sessionParam) {
+      setSelectedFilters((prev) => {
+        const next = { ...prev };
+        if (yearParam && !next.year.includes(yearParam)) {
+          next.year = [yearParam];
+        }
+        if (branchParam && !next.branch.includes(branchParam)) {
+          next.branch = [branchParam];
+        }
+        if (semesterParam && !next.semester.includes(semesterParam)) {
+          next.semester = [semesterParam];
+        }
+        if (sessionParam && !next.session.includes(sessionParam)) {
+          next.session = [sessionParam];
+        }
+        return next;
+      });
+    }
   }, [searchParams]);
 
   // Live Query from Convex Database

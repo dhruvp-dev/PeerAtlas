@@ -19,7 +19,7 @@ function loadEnv() {
     const envContent = fs.readFileSync(envPath, "utf8");
     envContent.split("\n").forEach((line) => {
       const match = line.match(/^([^=]+)=(.*)$/);
-      if (match) {
+      if (match && !process.env[match[1].trim()]) {
         process.env[match[1].trim()] = match[2].trim();
       }
     });
@@ -31,7 +31,7 @@ async function main() {
 
   loadEnv();
 
-  const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
+  const convexUrl = process.env.CONVEX_URL || process.env.NEXT_PUBLIC_CONVEX_URL;
   if (!convexUrl) {
     console.error(`${styles.red}Error: NEXT_PUBLIC_CONVEX_URL is not defined in .env.local${styles.reset}`);
     process.exit(1);
@@ -49,12 +49,14 @@ async function main() {
   }
 
   // Scan output subdirectories
+  const targetFolder = process.argv[2];
   const subdirs = fs
     .readdirSync(outputDir, { withFileTypes: true })
     .filter((dirent) => dirent.isDirectory())
-    .map((dirent) => dirent.name);
+    .map((dirent) => dirent.name)
+    .filter((name) => !targetFolder || name === targetFolder);
 
-  console.log(`Found ${styles.bold}${subdirs.length}${styles.reset} output directories to process.`);
+  console.log(`Found ${styles.bold}${subdirs.length}${styles.reset} output directories to process${targetFolder ? ` (targeted: ${targetFolder})` : ""}.`);
 
   let totalProcessed = 0;
   let totalUploaded = 0;
@@ -83,9 +85,9 @@ async function main() {
 
     console.log(`Loaded ${styles.bold}${papersData.length}${styles.reset} papers from papers.json.`);
 
-    let index = 0;
-    for (const paper of papersData) {
-      index++;
+    const CONCURRENCY = 8;
+
+    async function processPaper(paper, index) {
       totalProcessed++;
 
       try {
@@ -101,7 +103,7 @@ async function main() {
             `[${index}/${papersData.length}] ${styles.yellow}Warning: exportedPath is missing. Skipping.${styles.reset} - ${normalizedSubject}`
           );
           totalSkipped++;
-          continue;
+          return;
         }
 
         // Verify if PDF file exists on disk
@@ -111,7 +113,7 @@ async function main() {
             `[${index}/${papersData.length}] ${styles.yellow}Warning: File does not exist at ${paper.exportedPath}. Skipping.${styles.reset} - ${normalizedSubject}`
           );
           totalSkipped++;
-          continue;
+          return;
         }
 
         // Strict validation: check semester type and value
@@ -121,7 +123,7 @@ async function main() {
             `[${index}/${papersData.length}] ${styles.yellow}Warning: semester is null/invalid. Skipping.${styles.reset} - ${normalizedSubject}`
           );
           totalSkipped++;
-          continue;
+          return;
         }
 
         // Strict validation: check year type and value
@@ -131,22 +133,7 @@ async function main() {
             `[${index}/${papersData.length}] ${styles.yellow}Warning: year is null/invalid. Skipping.${styles.reset} - ${normalizedSubject}`
           );
           totalSkipped++;
-          continue;
-        }
-
-        // Idempotency check: query database to see if paper textHash already exists
-        if (paper.textHash) {
-          const existing = await client.query("papers:search", {
-            query: normalizedSubject,
-          });
-          const isDuplicate = existing.some((p) => p.textHash === paper.textHash);
-          if (isDuplicate) {
-            console.log(
-              `[${index}/${papersData.length}] ${styles.cyan}Skipped (Idempotent: textHash matches existing database record)${styles.reset} - ${normalizedSubject}`
-            );
-            totalSkipped++;
-            continue;
-          }
+          return;
         }
 
         // 1. Generate unique authorized upload URL from Convex
@@ -170,7 +157,7 @@ async function main() {
         const { storageId } = await response.json();
         totalUploaded++;
 
-        // 3. Invoke Convex mutation to save the paper record
+        // 3. Invoke Convex mutation to save the paper record (has index-backed textHash idempotency)
         const paperId = await client.mutation("papers:insertPaperFromIngestion", {
           branch: paper.branch,
           branchSlug: paper.branchSlug,
@@ -196,6 +183,17 @@ async function main() {
         totalErrors++;
       }
     }
+
+    const queue = papersData.map((p, i) => ({ paper: p, index: i + 1 }));
+    async function worker() {
+      while (queue.length > 0) {
+        const item = queue.shift();
+        if (!item) break;
+        await processPaper(item.paper, item.index);
+      }
+    }
+
+    await Promise.all(Array.from({ length: CONCURRENCY }, () => worker()));
   }
 
   console.log(`\n${styles.bold}${styles.cyan}=== Ingestion Summary ===${styles.reset}`);

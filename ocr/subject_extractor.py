@@ -145,8 +145,10 @@ class SubjectExtractor:
         """Extract a probable subject from the filename as last resort."""
         import os
         name = os.path.splitext(os.path.basename(source_path))[0]
+        # Strip leading paper code digits like "23946 "
+        name = re.sub(r"^\d{4,6}\s+", "", name)
         name = name.replace("_", " ").replace("-", " ")
         # Remove common suffixes
         name = re.sub(r"\b(SUMMER|WINTER|20\d\d|SEM\d?)\b", "", name, flags=re.IGNORECASE)
         name = re.sub(r"\s+", " ", name).strip()
-        return name.title() if len(name) > 3 else None
+        return name.title() if len(name) >= 3 else None

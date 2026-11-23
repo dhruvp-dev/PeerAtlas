@@ -13,13 +13,16 @@ export const FILTER_OPTIONS = {
     "Computer Science and Engineering",
     "Information Technology",
     "Electronics and Telecommunication Engineering",
+    "Electronics and Communication Engineering",
+    "Electrical Engineering",
+    "Electrical and Computer Engineering",
     "Civil Engineering",
     "Mechanical Engineering",
     "Chemical Engineering",
   ],
   semester: ["1", "2", "3", "4", "5", "6", "7", "8"],
   session: ["Winter", "Summer"],
-  year: ["2025", "2024", "2023", "2022", "2021", "2020", "2019", "2018"],
+  year: ["2026", "2025", "2024", "2023", "2022", "2021", "2020", "2019", "2018"],
 } as const;
 
 interface SearchFiltersProps {
