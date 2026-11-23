@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { X, ArrowRight, FileText, Layers, GraduationCap } from "lucide-react";
 
-const STORAGE_KEY = "peeratlas_new_papers_2026_seen_v4";
+const STORAGE_KEY = "peeratlas_new_papers_2026_seen_v5";
 
 export function NewPapersModal() {
   const [isOpen, setIsOpen] = useState(false);
@@ -74,7 +74,7 @@ export function NewPapersModal() {
 
         {/* Subtle Category Tag */}
         <div className="flex items-center gap-2">
-          <span className="inline-flex items-center rounded-md border border-border bg-muted/60 px-2 py-0.5 text-[11px] font-semibold text-sky-600 dark:text-sky-400">
+          <span className="inline-flex items-center rounded-md border border-border bg-muted/60 px-2 py-0.5 text-[11px] font-semibold text-sky-blue">
             Archive Update
           </span>
           <span className="text-[11px] font-medium text-muted-foreground">
@@ -133,10 +133,10 @@ export function NewPapersModal() {
           <button
             type="button"
             onClick={handleExplore}
-            className="flex items-center gap-1.5 rounded-lg bg-sky-500 hover:bg-sky-600 dark:bg-sky-500 dark:hover:bg-sky-400 text-[#ffffff] px-4 py-2 text-xs font-semibold shadow-sm transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 rounded-lg bg-sky-blue hover:bg-sky-blue/90 text-white px-4 py-2 text-xs font-semibold shadow-sm transition-colors cursor-pointer"
           >
-            <span className="text-[#ffffff]">Browse 2026 Papers</span>
-            <ArrowRight className="h-3.5 w-3.5 text-[#ffffff]" />
+            <span>Browse 2026 Papers</span>
+            <ArrowRight className="h-3.5 w-3.5" />
           </button>
         </div>
       </div>
