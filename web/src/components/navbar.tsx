@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { Search, Menu, X, BookOpen, LayoutDashboard, Info } from "lucide-react";
+import { Menu, X, BookOpen, Info } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
 import { useAnalytics } from "@/lib/analytics";
 

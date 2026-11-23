@@ -87,11 +87,17 @@ export function BrowseContent() {
   // State for search query and active filters
   const [query, setQuery] = useState(initialQuery);
   const [inputValue, setInputValue] = useState(initialQuery);
-  const [selectedFilters, setSelectedFilters] = useState<Record<FilterKey, string[]>>({
-    branch: [],
-    semester: [],
-    session: [],
-    year: [],
+  const [selectedFilters, setSelectedFilters] = useState<Record<FilterKey, string[]>>(() => {
+    const yearParam = searchParams.get("year");
+    const branchParam = searchParams.get("branch");
+    const semesterParam = searchParams.get("semester");
+    const sessionParam = searchParams.get("session");
+    return {
+      branch: branchParam ? [branchParam] : [],
+      semester: semesterParam ? [semesterParam] : [],
+      session: sessionParam ? [sessionParam] : [],
+      year: yearParam ? [yearParam] : [],
+    };
   });
 
   // State for tracking which dropdown is currently open (null if none)
@@ -100,35 +106,11 @@ export function BrowseContent() {
   // Derive active filters state
   const hasActiveFilters = Boolean(query) || Object.values(selectedFilters).some((f) => f.length > 0);
 
-  // Sync initial query and URL filter parameters
+  // Sync initial query from URL search parameters
   useEffect(() => {
     const q = searchParams.get("q") || "";
     setQuery(q);
     setInputValue(q);
-
-    const yearParam = searchParams.get("year");
-    const branchParam = searchParams.get("branch");
-    const semesterParam = searchParams.get("semester");
-    const sessionParam = searchParams.get("session");
-
-    if (yearParam || branchParam || semesterParam || sessionParam) {
-      setSelectedFilters((prev) => {
-        const next = { ...prev };
-        if (yearParam && !next.year.includes(yearParam)) {
-          next.year = [yearParam];
-        }
-        if (branchParam && !next.branch.includes(branchParam)) {
-          next.branch = [branchParam];
-        }
-        if (semesterParam && !next.semester.includes(semesterParam)) {
-          next.semester = [semesterParam];
-        }
-        if (sessionParam && !next.session.includes(sessionParam)) {
-          next.session = [sessionParam];
-        }
-        return next;
-      });
-    }
   }, [searchParams]);
 
   // Live Query from Convex Database

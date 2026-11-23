@@ -2,7 +2,6 @@
 
 import { useRef, useEffect, useState } from "react";
 import { ChevronDown, X } from "lucide-react";
-import { slugify } from "@/lib/utils";
 
 export type FilterKey = "branch" | "semester" | "session" | "year";
 
